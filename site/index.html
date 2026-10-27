@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homewise</title>
+<meta name="description" content="월세는 사라지고, 집은 남는다. 사내 저리 대출·은행 주담대·월세를 비교하는 상담용 계산기">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 왼쪽 상담 입력(데스크톱 sticky) + 오른쪽 결과. 추천 → 3년 비교 → 구간별 → 10년 → 리스크 → 팩트 체크 → 가격 → 조건 */
+:root{
+  color-scheme:light;
+  --bg:#f3f5f4; --surface:#ffffff; --sunk:#e9eeec;
+  --ink:#16302b; --muted:#5b6d68; --line:#d5dedb;
+  --own:#1d6b52;  --own-soft:#dcefe6;
+  --bank:#2f5f9e; --bank-soft:#e0e9f6;
+  --rent:#b04a3a; --rent-soft:#f6e3df;
+  --keep:#6b5aa6;
+  --warn:#9a6a00; --warn-soft:#fbefcf;
+  --font-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-num:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#101614; --surface:#18201e; --sunk:#1f2a27;
+  --ink:#e4ece9; --muted:#9aaba6; --line:#2e3b37;
+  --own:#5cc59b; --own-soft:#1d3a2f; --bank:#86aee8; --bank-soft:#1d2b40;
+  --rent:#e58a79; --rent-soft:#40231e;
+  --keep:#a898e0; --warn:#e2b44a; --warn-soft:#3a2f14; color-scheme:dark}}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:grid;gap:6px;margin-bottom:22px}
+.brand{font-family:var(--font-num);font-size:13px;letter-spacing:.14em;font-weight:600;color:var(--own)}
+h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700}
+h1 em{font-style:normal;color:var(--own)}
+.lede{margin:0;color:var(--muted);max-width:66ch}
+h2{font-size:17px;margin:0;font-weight:700;text-wrap:balance}
+h3{font-size:14px;margin:0;font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:18px;
+  position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:880px){.panel{position:static;max-height:none}}
+.group{display:grid;gap:12px}
+.group>h3{font-size:12px;letter-spacing:.06em;color:var(--muted)}
+details.group>summary{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600;cursor:pointer}
+details.group[open]>summary{margin-bottom:12px}
+.field{display:grid;gap:4px}
+.field .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.field label{font-size:13.5px}
+.field output{font-family:var(--font-num);font-size:13.5px;font-weight:600}
+.field .hint{font-size:12px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--own);margin:0}
+select{font:inherit;font-size:13.5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);width:100%}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px}
+.check input{margin-top:4px;accent-color:var(--own)}
+:focus-visible{outline:2px solid var(--own);outline-offset:2px}
+.sample{font-size:12px;color:var(--warn);background:var(--warn-soft);padding:6px 9px;border-radius:6px}
+
+.results{display:grid;gap:24px;min-width:0}
+section.block{display:grid;gap:12px;min-width:0}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+
+/* 추천 */
+.rec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--own);border-radius:10px;padding:18px 20px;display:grid;gap:10px}
+.rec .label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.rec .title{font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
+.rec .reason{margin:0;font-size:14.5px}
+.paths{display:grid;gap:6px}
+.path{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;font-size:13.5px}
+.path .cost{font-family:var(--font-num);font-size:13px}
+.path .why{grid-column:2/-1;font-size:12.5px;color:var(--muted)}
+
+.verdict{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.verdict>div{padding:16px 18px;display:grid;gap:4px;align-content:start;min-width:0}
+.verdict .rent{background:var(--rent-soft)}
+.verdict .buy{background:var(--own-soft)}
+.verdict .bk{background:var(--bank-soft)}
+.verdict .big{font-family:var(--font-num);font-size:clamp(24px,3.6vw,32px);font-weight:600;line-height:1.1}
+.verdict .rent .big{color:var(--rent)}
+.verdict .buy .big{color:var(--own)}
+.verdict .bk .big{color:var(--bank)}
+.verdict .cap{font-size:13px;color:var(--muted)}
+@media (max-width:640px){.verdict{grid-template-columns:minmax(0,1fr)}}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:1060px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{border-top:3px solid var(--ink);padding:10px 2px 0;display:grid;gap:3px;align-content:start;min-width:0}
+.kpi .label{font-size:12.5px;color:var(--muted)}
+.kpi .val{font-family:var(--font-num);font-size:22px;font-weight:600}
+.kpi .sub{font-size:12.5px;color:var(--muted)}
+.kpi.own{border-color:var(--own)} .kpi.own .val{color:var(--own)}
+.kpi.bank{border-color:var(--bank)} .kpi.bank .val{color:var(--bank)}
+.kpi.rent{border-color:var(--rent)} .kpi.rent .val{color:var(--rent)}
+
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:13.5px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+thead th{font-size:12px;color:var(--muted);font-weight:600;background:var(--sunk)}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+tr.total td{font-weight:700;background:var(--sunk)}
+.neg{color:var(--own)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--sunk);color:var(--muted);margin-left:6px;font-weight:600;vertical-align:1px}
+
+.chart-box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 10px 8px}
+.chart-box svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;padding:0 8px 6px}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px;background:var(--c)}
+.ten{font-size:14px;padding:4px 8px 6px;display:grid;gap:2px}
+
+.risks{display:grid;gap:8px}
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px}
+.callout strong{color:var(--warn)}
+
+.facts{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.fact{display:grid;grid-template-columns:76px minmax(0,1fr);gap:4px 12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.fact:last-child{border-bottom:0}
+.fact .claim{font-size:14px;font-weight:600}
+.fact .why{grid-column:2;font-size:13px;color:var(--muted)}
+.fact .why b{color:var(--ink);font-weight:600}
+@media (max-width:520px){.fact{grid-template-columns:minmax(0,1fr)}.fact .why{grid-column:1}}
+
+.ladder{display:grid;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.rung{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.rung:last-child{border-bottom:0}
+.rung .what{font-size:14px;font-weight:600}
+.rung .why{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+.rung .v{font-family:var(--font-num);font-weight:600;font-size:16px}
+.pick-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--muted)}
+.pick-meta button{font:inherit;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--own);background:var(--surface);color:var(--own);cursor:pointer}
+.pick-meta button:hover{background:var(--own-soft)}
+.bar{grid-column:1/-1;position:relative;height:6px;background:var(--sunk);border-radius:3px}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--own)}
+.bar b{position:absolute;top:-4px;width:2px;height:14px;background:var(--ink)}
+
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.checks{grid-template-columns:minmax(0,1fr)}}
+.chk{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;padding:11px 13px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.pill{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;align-self:start;justify-self:start;white-space:nowrap}
+.pill.ok{background:var(--own-soft);color:var(--own)}
+.pill.no{background:var(--rent-soft);color:var(--rent)}
+.pill.ask{background:var(--warn-soft);color:var(--warn)}
+.pill.part{background:var(--bank-soft);color:var(--bank)}
+.chk p{margin:0;font-size:13.5px}
+.chk .d{grid-column:2;font-size:12.5px;color:var(--muted)}
+
+.notes{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;font-size:13.5px}
+.notes ul{margin:6px 0 0;padding-left:18px;display:grid;gap:5px}
+.notes h3{margin-top:10px}
+.notes h3:first-child{margin-top:0}
+.notes a{color:var(--bank);word-break:break-all}
+footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .25s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">HOMEWISE</div>
+    <h1>월세는 사라지고, <em>집은 남는다</em></h1>
+    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 왼쪽에 상황을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 예시입니다.</p>
+  </header>
+
+  <div class="layout">
+    <form class="panel" id="inputs" autocomplete="off">
+      <div class="sample">예시 값입니다. 상담받는 분의 상황으로 바꿔 주세요.</div>
+
+      <div class="group">
+        <h3>지금 상황</h3>
+        <div class="field"><div class="row"><label for="salary">총연봉</label><output id="o-salary"></output></div>
+          <input type="range" id="salary" min="3000" max="20000" step="100" value="8000">
+          <div class="hint" id="h-base"></div></div>
+        <div class="field"><div class="row"><label for="own">쓸 수 있는 자기자금</label><output id="o-own"></output></div>
+          <input type="range" id="own" min="0" max="10" step="0.1" value="2.5">
+          <div class="hint">모자라는 돈은 보증보험구입대출(최대 3억)로 자동으로 채웁니다.</div></div>
+        <div class="field"><div class="row"><label for="rentDeposit">지금 월세 보증금</label><output id="o-rentDeposit"></output></div>
+          <input type="range" id="rentDeposit" min="0" max="5" step="0.1" value="1"></div>
+        <div class="field"><div class="row"><label for="rentMonthly">지금 월세</label><output id="o-rentMonthly"></output></div>
+          <input type="range" id="rentMonthly" min="30" max="300" step="5" value="100"></div>
+      </div>
+
+      <div class="group">
+        <h3>사려는 집</h3>
+        <div class="field"><div class="row"><label for="price">집값 (시세)</label><output id="o-price"></output></div>
+          <input type="range" id="price" min="3" max="15" step="0.1" value="8"></div>
+        <div class="field"><div class="row"><label for="pubRatio">공시가 / 시세 비율</label><output id="o-pubRatio"></output></div>
+          <input type="range" id="pubRatio" min="55" max="90" step="1" value="69">
+          <div class="hint" id="h-pub"></div></div>
+        <label class="check"><input type="checkbox" id="firstHome" checked><span>생애최초 취득세 감면 (최대 200만원)</span></label>
+      </div>
+
+      <div class="group">
+        <h3>은행 주담대</h3>
+        <div class="field"><label for="bankType">상품 유형 (공제 한도가 갈림)</label>
+          <select id="bankType">
+            <option value="jugi" selected>5년 주기형 · 원리금균등 → 1,800만</option>
+            <option value="jugiEq">5년 주기형 · 원금균등 → 2,000만</option>
+            <option value="mixed">혼합형·변동 · 원리금균등 → 800만</option>
+          </select></div>
+        <div class="field"><div class="row"><label for="bankRate">금리</label><output id="o-bankRate"></output></div>
+          <input type="range" id="bankRate" min="3" max="6" step="0.05" value="4.7">
+          <div class="hint">갈아탈 때도 같은 금리로 계산합니다.</div></div>
+        <div class="field"><div class="row"><label for="bankCap">한도</label><output id="o-bankCap"></output></div>
+          <input type="range" id="bankCap" min="2" max="6" step="0.5" value="6">
+          <div class="hint">2025-10-15 대책: 시가 15억 이하 6억, 15~25억 4억</div></div>
+        <div class="field"><label for="bankLtv">LTV</label>
+          <select id="bankLtv"><option value="70" selected>70% (생애최초 또는 비규제지역)</option><option value="40">40% (규제지역 일반)</option></select></div>
+      </div>
+
+      <details class="group" open>
+        <summary>사내 저리 대출 조건 (회사마다 다름)</summary>
+        <div class="group">
+          <div class="field"><div class="row"><label for="compRate">본인 부담 금리</label><output id="o-compRate"></output></div>
+            <input type="range" id="compRate" min="0" max="4" step="0.1" value="1.5"></div>
+          <div class="field"><div class="row"><label for="compLegal">세법상 인정 금리</label><output id="o-compLegal"></output></div>
+            <input type="range" id="compLegal" min="2" max="6" step="0.1" value="4.6">
+            <div class="hint">차이만큼 회사 지원으로 보고 근로소득에 더해 세금을 계산합니다.</div></div>
+          <div class="field"><div class="row"><label for="compMax">한도</label><output id="o-compMax"></output></div>
+            <input type="range" id="compMax" min="1" max="6" step="0.5" value="5"></div>
+          <div class="field"><div class="row"><label for="compLtv">집값 대비 한도</label><output id="o-compLtv"></output></div>
+            <input type="range" id="compLtv" min="40" max="90" step="5" value="70"></div>
+          <div class="field"><div class="row"><label for="compGrace">거치 (이자만 내는 기간)</label><output id="o-compGrace"></output></div>
+            <input type="range" id="compGrace" min="0" max="5" step="1" value="3"></div>
+          <div class="field"><div class="row"><label for="compYears">거치 후 상환 기간</label><output id="o-compYears"></output></div>
+            <input type="range" id="compYears" min="5" max="20" step="1" value="10"></div>
+          <div class="field"><div class="row"><label for="smgRate">보증보험구입대출 금리</label><output id="o-smgRate"></output></div>
+            <input type="range" id="smgRate" min="3" max="6" step="0.01" value="3.5">
+            <div class="hint">직장 금고 상품 예시. 10년 원금균등, 변동금리</div></div>
+          <label class="check"><input type="checkbox" id="dedOn"><span>사내 대출에서 갈아탄 은행 대출도 소득공제된다고 가정 <span class="tag">미확인</span></span></label>
+        </div>
+      </details>
+
+      <div class="group">
+        <h3>비교 기준</h3>
+        <div class="field"><div class="row"><label for="m2Rate">통화량(M2) 증가율 (연)</label><output id="o-m2Rate"></output></div>
+          <input type="range" id="m2Rate" min="0" max="10" step="0.1" value="5.6">
+          <div class="hint">2026년 8월 M2 4,266.8조원, 1년 전보다 5.6% 증가 (한국은행)</div></div>
+        <div class="field"><div class="row"><label for="depRate">예금 금리 (묶인 돈의 기회비용)</label><output id="o-depRate"></output></div>
+          <input type="range" id="depRate" min="0" max="5" step="0.1" value="2.5"></div>
+        <label class="check"><input type="checkbox" id="oppOn" checked><span>묶인 돈의 예금이자도 비용으로 계산</span></label>
+        <div class="field"><div class="row"><label for="growth">집값 상승률 (연)</label><output id="o-growth"></output></div>
+          <input type="range" id="growth" min="-3" max="6" step="0.5" value="0">
+          <div class="hint">기본 0%. 집값이 안 올라도 되는지부터 봅니다.</div></div>
+      </div>
+    </form>
+
+    <main class="results">
+      <section class="block" aria-labelledby="t-rec">
+        <h2 id="t-rec" hidden>추천 경로</h2>
+        <div class="rec" id="rec"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-money">
+        <div class="block-head"><h2 id="t-money">시중의 돈은 계속 늘어난다</h2><span class="muted small">순자산 = 집값 − 남은 대출 + 예금 / 월세는 보증금 + 예금</span></div>
+        <div class="kpis">
+          <div class="kpi"><div class="label">지금 통화량 (M2, 2026-08)</div><div class="val">4,266.8조</div><div class="sub">1년 전보다 +5.6% · 한 달에 39조원 증가</div></div>
+          <div class="kpi"><div class="label">같은 속도면 10년 뒤</div><div class="val" id="k-m2x"></div><div class="sub" id="k-m2x-d"></div></div>
+          <div class="kpi rent"><div class="label">예금에만 두면 10년 뒤 내 몫</div><div class="val" id="k-cash"></div><div class="sub" id="k-cash-d"></div></div>
+          <div class="kpi own"><div class="label">집값이 통화량만큼 오르면</div><div class="val" id="k-nwm2"></div><div class="sub" id="k-nwm2-d"></div></div>
+        </div>
+        <div class="chart-box">
+          <div class="legend"><span style="--c:var(--rent)">월세 + 예금</span><span style="--c:var(--muted)">매수, 집값 그대로</span><span style="--c:var(--own)">매수, 집값이 통화량만큼</span><span style="--c:var(--warn)">통화량 기준선 (지금 자기자금이 같은 몫을 지키려면)</span></div>
+          <svg id="nw" viewBox="0 0 640 300" role="img" aria-label="10년 순자산 비교 차트"></svg>
+          <div class="ten" id="nw-note"></div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="t-pick">
+        <div class="block-head"><h2 id="t-pick">무엇을 살까: 수원 매탄·망포 생활권 대장</h2><span class="muted small">84㎡ 기준 · 국토부 실거래 집계 · 2026-07까지</span></div>
+        <div class="callout"><strong>원칙 (부읽남 강의 요지)</strong><br>
+          ① 통화량이 늘면 집값 기준선도 함께 올라갑니다. 3년간 통화량이 13% 늘었다면 전고점보다 13% 높아야 본전입니다.<br>
+          ② 좋은 동네의 애매한 단지보다 한 단계 아래 동네의 대장을 사는 편이 나중에 갈아타기 쉽습니다.<br>
+          ③ 쓸 수 있는 능력의 최대치를 씁니다. 15억을 살 수 있는데 걱정돼서 11억짜리를 사지 않습니다.</div>
+        <div class="ladder" id="picks"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-verdict">
+        <div class="block-head"><h2 id="t-verdict" data-g>처음 몇 년, 매달 사라지는 돈</h2><span class="muted small">원금 상환은 내 자산이라 빼고 계산</span></div>
+        <div class="verdict">
+          <div class="rent"><div class="cap">월세로 계속 살면</div><div class="big" id="v-rent"></div><div class="cap" id="v-rent-d"></div></div>
+          <div class="buy"><div class="cap" id="v-buy-h"></div><div class="big" id="v-buy"></div><div class="cap" id="v-buy-d"></div></div>
+          <div class="bk"><div class="cap">처음부터 은행 주담대로 사면</div><div class="big" id="v-bank"></div><div class="cap" id="v-bank-d"></div></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi own"><div class="label">사내 대출 실제 금리</div><div class="val" id="k-eff"></div><div class="sub" id="k-eff-d"></div></div>
+          <div class="kpi bank"><div class="label">은행 주담대 실제 금리</div><div class="val" id="k-beff"></div><div class="sub" id="k-beff-d"></div></div>
+          <div class="kpi rent"><div class="label">회사 지원금에 붙는 세금</div><div class="val" id="k-sup"></div><div class="sub" id="k-sup-d"></div></div>
+          <div class="kpi"><div class="label">공제 1,800 vs 800 환급 차이</div><div class="val" id="k-gap"></div><div class="sub" id="k-gap-d"></div></div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="t-plan">
+        <div class="block-head"><h2 id="t-plan">구간별 매달 나가는 돈</h2><span class="muted small">만원 / 월</span></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr id="plan-head"></tr></thead>
+          <tbody id="plan"></tbody>
+        </table></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-chart">
+        <div class="block-head"><h2 id="t-chart">10년 누적, 사라진 돈</h2><span class="muted small">취득세·중개비 포함, 집값 변동 제외</span></div>
+        <div class="chart-box">
+          <div class="legend"><span style="--c:var(--rent)">월세</span><span style="--c:var(--keep)">사내 대출 그대로</span><span style="--c:var(--own)">사내 → 은행 갈아타기</span><span style="--c:var(--bank)">처음부터 은행</span></div>
+          <svg id="chart" viewBox="0 0 640 300" role="img" aria-label="10년 누적 비용 비교 차트"></svg>
+          <div class="ten" id="ten"></div>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="t-risk">
+        <h2 id="t-risk">꼭 알고 결정할 것</h2>
+        <div class="risks" id="risks"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-facts">
+        <div class="block-head"><h2 id="t-facts">흔히 듣는 말, 팩트 체크</h2><span class="muted small">2026-10-27 확인 · 숫자는 왼쪽 입력값 기준</span></div>
+        <div class="facts" id="facts"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-ladder">
+        <div class="block-head"><h2 id="t-ladder">얼마짜리 집까지 되나</h2><span class="muted small">세로 막대 = 지금 입력한 집값</span></div>
+        <div class="ladder" id="ladder"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-checks">
+        <h2 id="t-checks">조건 체크</h2>
+        <div class="checks" id="checks"></div>
+      </section>
+
+      <section class="block" aria-labelledby="t-prod">
+        <h2 id="t-prod">대출 3종 한눈에</h2>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>구분</th><th>사내 저리 대출</th><th>보증보험구입대출</th><th>은행 장기주담대</th></tr></thead>
+          <tbody id="prod"></tbody>
+        </table></div>
+      </section>
+
+      <section class="notes" aria-labelledby="t-notes">
+        <h3 id="t-notes">계산 가정</h3>
+        <ul>
+          <li>사내 대출 = min(한도, 집값 × 집값 대비 한도). 세법상 인정 금리와 본인 부담 금리의 차이는 근로소득에 더해 세금을 계산합니다.</li>
+          <li>은행 주담대 = min(한도, 집값 × LTV, DSR 40% 한도), 30년, 거치 없음. 보증보험구입대출도 DSR에 넣고, 은행 대출을 먼저 채웁니다. 소득공제는 1년차부터 1년치 전액으로 계산합니다.</li>
+          <li>세금: 근로소득공제 → 본인 기본공제 150만, 4대보험(연봉 기준), 기타 공제 250만을 빼고 소득세율(지방세 10% 포함)로 계산합니다. 세액공제는 바뀌지 않는다고 봅니다.</li>
+          <li>장기주택저당차입금 이자 소득공제 조건: 취득 당시 기준시가(공시가) 6억 이하, 무주택·1주택 세대주, 상환기간 15년 이상, 저당권 설정, 금융회사 등에서 빌린 대출.</li>
+          <li>취득세: 6억 이하 1%, 6~9억 누진, 9억 초과 3% + 지방교육세(85㎡ 이하 기준). 중개수수료 0.4~0.7% + 등기비 약 150만(추정).</li>
+          <li>재산세는 공시가의 약 0.13%/년(1주택 특례 추정). 매도 비용·양도세, 원금 상환분의 기회비용, 월세 인상은 넣지 않았습니다.</li>
+          <li>추천은 자금이 모자라지 않고 DSR 40% 이하인 경로 중 10년 누적 비용이 가장 적은 것입니다. 사내 대출 그대로 갚기는 거치 후 원리금을 같은 40% 기준으로 봅니다.</li>
+        </ul>
+        <h3>확인이 필요한 것</h3>
+        <ul>
+          <li><strong>사내 대출에서 갈아탄 대출의 소득공제.</strong> 대환 공제는 기존 대출이 공제 대상(금융회사 등에서 빌린 장기주택저당차입금)일 때 인정됩니다. 회사에서 빌린 대출은 여기에 들어가지 않을 가능성이 높아 기본값은 공제 없음입니다(추론). 국세청 126에 확인하세요.</li>
+          <li><strong>갈아탈 때의 은행 한도·LTV.</strong> 지금 규제(2025-10-15 대책) 기준입니다. 몇 년 뒤 규제는 알 수 없습니다.</li>
+          <li>은행 5년 주기형의 실제 금리는 상담 시점에 은행에서 확인해 넣어 주세요.</li>
+          <li>DSR은 스트레스 금리 없이 단순 계산했습니다.</li>
+        </ul>
+        <h3>참고 자료</h3>
+        <ul>
+          <li>공제 한도·대환 개정: <a href="https://www.ajunews.com/view/20240123155129165" target="_blank" rel="noopener">아주경제 2024-01-23 세법 시행령 개정</a></li>
+          <li>비거치식 70% 요건: <a href="https://albup.co.kr/page/interpretation_detail.php?com_idx=1281" target="_blank" rel="noopener">유권해석 정리</a></li>
+          <li>중도상환 인정 논란: <a href="https://www.clien.net/service/board/park/19126997" target="_blank" rel="noopener">클리앙 게시글</a></li>
+          <li>카카오뱅크 중도상환해약금 면제 연장: <a href="https://biz.sbs.co.kr/amp/article/20000239059" target="_blank" rel="noopener">SBS Biz</a></li>
+          <li>통화량: <a href="https://biz.sbs.co.kr/amp/article/20000340139" target="_blank" rel="noopener">SBS Biz, 8월 시중 통화량 4267조원</a> (한국은행 2026-10-15 발표)</li>
+          <li>실거래: <a href="https://dapt.kr/apt/BrA002.html" target="_blank" rel="noopener">매탄위브하늘채</a> · <a href="https://news.nate.com/view/20260418n07478" target="_blank" rel="noopener">매탄현대힐스테이트</a> · <a href="https://m.richgo.ai/realty/danji/a2EdQCw" target="_blank" rel="noopener">영통아이파크캐슬2단지</a> · <a href="https://www.newstomato.com/ReadNews.aspx?no=1190184" target="_blank" rel="noopener">광교 중흥S클래스</a></li>
+          <li>투자 원칙: 부읽남 2026년 강의 요지 (강의 녹취 기준 요약)</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <footer>Homewise는 참고용 계산기입니다. 투자·세무·대출 자문이 아니며, 실제 금리·한도·세금은 금융기관과 국세청에서 확인해야 합니다.</footer>
+</div>
+
+<script src="calc.js"></script>
+<script>
+(() => {
+const H = window.Homewise;
+const { won, eok, pct, avg, N } = H;
+const $ = id => document.getElementById(id);
+const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
+  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears"];
+
+function read() {
+  const v = {};
+  for (const id of ids) {
+    const el = $(id);
+    v[id] = el.type === "checkbox" ? el.checked : el.id === "bankType" ? el.value : +el.value;
+  }
+  return v;
+}
+
+function showInputs(v) {
+  const set = (id, t) => { $("o-" + id).textContent = t; };
+  set("price", eok(v.price)); set("pubRatio", v.pubRatio + "%"); set("salary", won(v.salary) + "원"); set("own", eok(v.own));
+  set("smgRate", pct(v.smgRate)); set("bankRate", pct(v.bankRate)); set("bankCap", eok(v.bankCap));
+  set("rentDeposit", eok(v.rentDeposit)); set("rentMonthly", v.rentMonthly + "만원"); set("depRate", pct(v.depRate, 1));
+  set("growth", (v.growth > 0 ? "+" : "") + v.growth.toFixed(1) + "%");
+  set("m2Rate", pct(v.m2Rate, 1)); set("compRate", pct(v.compRate, 1)); set("compLegal", pct(v.compLegal, 1)); set("compMax", eok(v.compMax));
+  set("compLtv", v.compLtv + "%"); set("compGrace", v.compGrace + "년"); set("compYears", v.compYears + "년");
+}
+
+function render() {
+  const v = read();
+  showInputs(v);
+  const r = H.simulate(v);
+  const rec = H.recommend(v, r);
+  const base = H.taxBase(v.salary, 0, 0);
+  const { A, B, C, G } = r;
+  const Gy = v.compGrace;
+  const span = Math.max(G, 12); // 거치 0년이면 1년차로 비교
+  $("h-pub").textContent = "추정 공시가 " + eok(r.pub) + (r.dedOK ? " · 6억 이하 (공제 가능)" : " · 6억 초과 (공제 불가)");
+  $("h-base").textContent = `추정 과세표준 약 ${won(base)}원`;
+
+  renderRec(v, r, rec);
+  renderMoney(v, r, rec);
+  renderPicks(v, r);
+
+  // 처음 몇 년 비교
+  $("t-verdict").textContent = Gy > 0 ? `처음 ${Gy}년, 매달 사라지는 돈` : "첫해, 매달 사라지는 돈";
+  const p1 = avg(B.m, 0, span, o => o.sunk), p1cash = avg(B.m, 0, span, o => o.cash), p1pr = avg(B.m, 0, span, o => o.cPr + o.sPr);
+  const c1 = avg(C.m, 0, span, o => o.sunk), c1cash = avg(C.m, 0, span, o => o.cash), c1pr = avg(C.m, 0, span, o => o.bPr + o.sPr);
+  $("v-rent").textContent = won(r.rentM) + "원";
+  $("v-rent-d").textContent = `월세 ${v.rentMonthly}만` + (v.oppOn ? ` + 보증금 이자 ${won(r.rentM - v.rentMonthly)}` : "") + " · 전부 사라짐";
+  $("v-buy-h").textContent = `사내 대출 ${pct(v.compRate, 1)}로 사면` + (Gy > 0 ? ` (이자만 ${Gy}년)` : "");
+  $("v-buy").textContent = won(p1) + "원";
+  $("v-buy-d").textContent = `통장에서 ${won(p1cash)}원 나감 · 그중 ${won(p1pr)}원은 원금`;
+  $("v-bank").textContent = won(c1) + "원";
+  $("v-bank-d").textContent = `통장에서 ${won(c1cash)}원 나감 · 그중 ${won(c1pr)}원은 원금 · 공제 환급 반영`;
+
+  // KPI
+  const y1 = B.yTax[0];
+  $("k-eff").textContent = r.C0 > 0 ? pct((r.C0 * v.compRate / 100 + y1.supTax) / r.C0 * 100) : "–";
+  $("k-eff-d").textContent = `표면 ${pct(v.compRate, 1)} + 지원금 세금`;
+  const cy = C.yTax[0];
+  $("k-beff").textContent = pct((cy.bInt - cy.dedRefund) / r.bankMax * 100);
+  $("k-beff-d").textContent = r.dedOK ? `표면 ${pct(v.bankRate)} − 공제 환급 연 ${won(cy.dedRefund)}원 (한도 ${r.limit.toLocaleString("ko-KR")}만)` : "공시가 6억 초과라 공제 없음";
+  $("k-sup").textContent = won(y1.supTax) + "원/년";
+  $("k-sup-d").textContent = `지원금 ${won(y1.sup)}원이 소득으로 잡힘 · 월 ${won(y1.supTax / 12)}원`;
+  const gap = r.dedOK ? H.refund(v.salary, Math.min(cy.bInt, 1800)) - H.refund(v.salary, Math.min(cy.bInt, 800)) : 0;
+  $("k-gap").textContent = won(gap) + "원/년";
+  $("k-gap-d").textContent = r.dedOK ? `5년 주기형(1,800) vs 혼합형(800) · 금리 ${pct(gap / r.bankMax * 100)}p와 같은 효과` : "공시가 6억 초과라 차이 없음";
+
+  renderPlan(v, r, span);
+  drawChart(r);
+  renderTen(v, r);
+  renderRisks(v, r, rec);
+  renderFacts(v, r, base);
+  renderLadder(v, r);
+  renderChecks(v, r, rec);
+  renderProducts(v, r);
+}
+
+function renderRec(v, r, rec) {
+  const order = { A: 0, B: 1, C: 2 };
+  const rows = rec.paths.slice().sort((a, b) => order[a.key] - order[b.key]).map(p => {
+    const best = rec.best && rec.best.key === p.key;
+    const pill = best ? `<span class="pill ok">추천</span>` : p.ok ? `<span class="pill part">가능</span>` : `<span class="pill no">어려움</span>`;
+    return `<div class="path">${pill}<span>${p.name}</span><span class="cost">10년 ${won(p.sim.cumArr[N])}</span>${p.why ? `<span class="why">${p.why}</span>` : ""}</div>`;
+  }).join("");
+  if (!rec.best) {
+    $("rec").innerHTML = `<div class="label">추천 경로</div><div class="title">지금 조건으로는 무리 없는 경로가 없습니다</div>
+      <p class="reason">자기자금을 늘리거나 집값을 낮춰 보세요. 아래 "얼마짜리 집까지 되나"에서 가능한 가격을 볼 수 있습니다.</p><div class="paths">${rows}</div>`;
+    return;
+  }
+  const b = rec.best, gapRent = r.rentCum[N] - b.sim.cumArr[N];
+  const be = H.breakEvenGrowth(r, b.sim);
+  const vsRent = gapRent >= 0
+    ? `10년 동안 월세보다 <strong class="neg">${won(gapRent)}원</strong> 덜 사라집니다. 집값이 그대로여도 이득입니다.`
+    : `10년 동안 사라지는 돈은 월세보다 ${won(-gapRent)}원 많지만, 집값이 <strong>연 ${pct(be, 1)}</strong>만 올라도 본전입니다.`;
+  $("rec").innerHTML = `<div class="label">추천 경로</div><div class="title">${b.name}</div>
+    <p class="reason">${vsRent} 그동안 갚은 원금은 모두 내 자산으로 남습니다.</p>
+    ${b.key === "B" && r.repay > 0 ? `<div class="callout"><strong>조건:</strong> 거치가 끝날 때 ${won(r.repay)}원을 직접 갚아야 합니다. 거치 ${v.compGrace}년 동안 매달 ${won(r.repay / Math.max(r.G, 1))}원(보너스 포함)을 모을 수 있어야 하는 계획입니다.</div>` : ""}
+    <div class="paths">${rows}</div>`;
+}
+
+function renderMoney(v, r, rec) {
+  const sim = rec.best ? rec.best.sim : r.B;
+  const flat = H.netWorth(v, r, sim, 0), m2 = H.netWorth(v, r, sim, v.m2Rate);
+  const line = H.moneyLine(v.own * 10000, v.m2Rate);
+  const x10 = Math.pow(1 + v.m2Rate / 100, 10);
+  $("k-m2x").textContent = "×" + x10.toFixed(2);
+  $("k-m2x-d").textContent = `통화량 약 ${Math.round(4266.8 * x10).toLocaleString("ko-KR")}조원`;
+  const cash10 = v.own * 10000 * Math.pow(1 + v.depRate / 100, 10);
+  $("k-cash").textContent = pct(cash10 / line[10] * 100, 0);
+  $("k-cash-d").textContent = `예금 ${pct(v.depRate, 1)}로 ${won(cash10)}원이 돼도 통화량 기준 ${won(line[10])}원에 못 미침`;
+  $("k-nwm2").textContent = won(m2.buy[10]) + "원";
+  $("k-nwm2-d").textContent = `10년 뒤 순자산 · 월세 ${won(m2.rent[10])}원보다 ${won(m2.buy[10] - m2.rent[10])}원 많음`;
+
+  const W = 640, Ht = 300, L = 80, R = 104, T = 14, Bm = 30;
+  const series = [
+    { d: m2.rent, c: "var(--rent)", n: "월세" },
+    { d: flat.buy, c: "var(--muted)", n: "집값 그대로" },
+    { d: m2.buy, c: "var(--own)", n: "통화량만큼" },
+    { d: line, c: "var(--warn)", n: "기준선", dash: true }
+  ];
+  const all = series.flatMap(s => s.d);
+  const lo = Math.min(0, ...all), hi = Math.max(...all);
+  const stepRaw = (hi - lo) / 4, mag = Math.pow(10, Math.floor(Math.log10(stepRaw)));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(k => k >= stepRaw);
+  const bottom = Math.floor(lo / step) * step, top = Math.ceil(hi / step) * step;
+  const x = t => L + (W - L - R) * t / 10, y = val => T + (Ht - T - Bm) * (1 - (val - bottom) / (top - bottom));
+  let s = "";
+  for (let t = bottom; t <= top + 1e-6; t += step) {
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--line)" stroke-width="1"/>`;
+    s += `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" style="fill:var(--muted)">${Math.abs(t) < 1 ? "0" : won(t)}</text>`;
+  }
+  for (let t = 0; t <= 10; t += 2) s += `<text x="${x(t)}" y="${Ht - 10}" text-anchor="middle" font-size="11" style="fill:var(--muted)">${t}년</text>`;
+  const ends = [];
+  series.forEach(se => {
+    const pts = se.d.map((v2, t) => `${x(t).toFixed(1)},${y(v2).toFixed(1)}`).join(" ");
+    s += `<polyline points="${pts}" fill="none" style="stroke:${se.c}" stroke-width="2.5" stroke-linejoin="round"${se.dash ? ' stroke-dasharray="6 5"' : ""}/>`;
+    s += `<circle cx="${x(10)}" cy="${y(se.d[10])}" r="4" style="fill:${se.c}"/>`;
+    ends.push({ yy: y(se.d[10]), last: se.d[10], se });
+  });
+  ends.sort((a, b) => a.yy - b.yy);
+  for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 28) ends[i].yy = ends[i - 1].yy + 28;
+  const over = ends[ends.length - 1].yy - (Ht - Bm);
+  if (over > 0) ends.forEach(e => { e.yy -= over; });
+  ends.forEach(e => {
+    s += `<text x="${x(10) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
+    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+  });
+  $("nw").innerHTML = s;
+  $("nw-note").innerHTML = `<div>매수 경로: <strong>${rec.best ? rec.best.name : "사내 → 은행 갈아타기"}</strong>. 두 사람은 매달 같은 돈을 쓰고, 덜 쓰는 쪽이 차액을 예금(${pct(v.depRate, 1)})에 넣는다고 계산했습니다.</div>
+    <div class="muted small">집값이 통화량만큼 오른다는 것은 강의의 주장이자 가정입니다. 실제 집값은 지역·단지마다 다르고 떨어질 수도 있습니다.</div>`;
+}
+
+const PICKS = [
+  { name: "광교중흥S클래스 · 광교자연앤힐스테이트", area: "광교", price: null, range: "84㎡ 15~20억 (2026 보도)", note: "광교 대장. 무주택 첫 집으로는 자금 수준이 다릅니다." },
+  { name: "영통아이파크캐슬2단지", area: "망포동 · 2019년 · 1,162세대", price: 10.8, range: "84㎡ 10.7~10.8억 (2026-05~07 실거래)", note: "망포 신축 대단지. 공시가 6억을 넘을 가능성이 높아 이자 소득공제는 어렵습니다(추정)." },
+  { name: "힐스테이트영통", area: "망포동 · 2,140세대", price: null, range: "매매가 미확인 · 전세 33평 6.3억 (2026-07)", note: "망포동 대장주로 불리는 단지. 매매가는 실거래 조회로 확인하세요." },
+  { name: "매탄위브하늘채", area: "매탄동", price: 8.1, range: "84㎡ 7.7~8.5억 (2026-06~07 실거래)", note: "매탄동 대장. 2026년 10월 매탄동 거래량 1위. 공시가 6억 이하 구간이라 이자 소득공제도 노려볼 수 있습니다." },
+  { name: "매탄현대힐스테이트", area: "매탄동 · 2006년 · 2,328세대", price: 6.35, range: "84㎡ 평균 6.35억 (최근 6개월, 2026-07)", note: "구축 대단지. 강의 기준으로는 대장보다 한 단계 아래입니다." }
+];
+
+function renderPicks(v, r) {
+  const maxC = H.maxPrice(v, P => Math.min(v.compMax * 10000, P * 100 * v.compLtv));
+  const maxB = H.maxPriceBank(v);
+  const maxAll = Math.max(maxC, maxB);
+  $("picks").innerHTML = PICKS.map((p, i) => {
+    let pill = `<span class="pill ask">확인</span>`;
+    if (p.price != null) {
+      const can = p.price <= maxAll, ded = p.price * v.pubRatio / 100 <= 6;
+      pill = can ? `<span class="pill ok">자금 가능</span>` : `<span class="pill no">자금 부족</span>`;
+      if (can) pill += ded ? ` <span class="pill part">공제 가능</span>` : ` <span class="pill ask">공제 어려움</span>`;
+    } else if (p.area === "광교") pill = `<span class="pill no">자금 부족</span>`;
+    return `<div class="rung"><div class="what">${p.name}</div><div class="v">${p.price != null ? eok(p.price) : "–"}</div>
+      <div class="why">${p.area} · ${p.range}</div><div class="why">${p.note}</div>
+      <div class="pick-meta">${pill}${p.price != null ? `<button type="button" data-price="${p.price}">이 집값으로 계산</button>` : ""}</div></div>`;
+  }).join("") + `<div class="rung"><div class="why">지금 자금으로 살 수 있는 최고가 약 ${eok(maxAll)} · 공제 판단은 공시가 비율 ${v.pubRatio}% 가정 · 최신 실거래는 국토교통부 실거래가 공개시스템에서 확인</div></div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-price]");
+  if (!b) return;
+  const el = document.getElementById("price");
+  el.value = b.dataset.price;
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+  document.getElementById("t-rec").parentElement.scrollIntoView({ behavior: "smooth" });
+});
+
+function renderPlan(v, r, span) {
+  const { A, B, C, G } = r;
+  const gy = v.compGrace;
+  const after = Math.min(G, N - 12);
+  const ph = [[B, 0, span], [B, after, after + 12], [A, after, after + 12], [C, 0, 12]];
+  $("plan-head").innerHTML = `<th>항목</th><th>사내 대출<br>${gy > 0 ? `1~${gy}년 이자만` : "1년차"}</th><th>→ ${gy + 1}년차 은행<br>갈아타기</th><th>→ ${gy + 1}년차 사내<br>그대로 상환</th><th>처음부터 은행<br>1년차</th>`;
+  const col = k => ph.map(([s, a, b]) => avg(s.m, a, b, o => o[k]));
+  const cI = col("cInt"), cP = col("cPr"), bI = col("bInt"), bP = col("bPr"), sI = col("sInt"), sP = col("sPr"), cash = col("cash"), sunk = col("sunk");
+  const supT = ph.map(([s, a]) => s.yTax[Math.floor(a / 12)].supTax / 12);
+  const dedR = ph.map(([s, a]) => -s.yTax[Math.floor(a / 12)].dedRefund / 12);
+  const pr = ph.map((_, i) => cP[i] + bP[i] + sP[i]);
+  const f = x => Math.abs(x) < 0.5 ? "–" : won(x);
+  const row = (label, arr, cls = "", fmt = f) => `<tr class="${cls}"><td>${label}</td>${arr.map(x => `<td class="num">${fmt(x)}</td>`).join("")}</tr>`;
+  let html = "";
+  html += row(`사내 대출 이자 (${pct(v.compRate, 1)})`, cI);
+  html += row("사내 대출 원금", cP);
+  html += row(`은행 이자 (${pct(v.bankRate)})`, bI);
+  html += row("은행 원금", bP);
+  if (r.fc.smg > 0 || r.fb.smg > 0) {
+    html += row(`보증보험구입대출 이자 (${pct(v.smgRate)})`, sI);
+    html += row("보증보험구입대출 원금", sP);
+  }
+  html += row("회사 지원금 세금", supT);
+  html += row(`<span class="neg">이자 소득공제 환급</span>`, dedR);
+  html += row("재산세 (추정)", ph.map(() => r.propTax / 12));
+  html += row("통장에서 나가는 돈", cash, "total", won);
+  html += row(`<span class="neg">그중 원금 = 내 자산</span>`, pr, "", x => `<span class="neg">${won(x)}</span>`);
+  html += row(`사라지는 돈${v.oppOn ? " (기회비용 포함)" : ""}`, sunk, "total", won);
+  $("plan").innerHTML = html;
+}
+
+function drawChart(r) {
+  const W = 640, Ht = 300, L = 80, R = 104, T = 14, Bm = 30;
+  const series = [
+    { d: r.rentCum, c: "var(--rent)", n: "월세" },
+    { d: r.A.cumArr, c: "var(--keep)", n: "사내 그대로" },
+    { d: r.B.cumArr, c: "var(--own)", n: "사내→은행" },
+    { d: r.C.cumArr, c: "var(--bank)", n: "처음부터 은행" }
+  ];
+  const max = Math.max(...series.map(s => Math.max(...s.d)));
+  const stepRaw = max / 4, mag = Math.pow(10, Math.floor(Math.log10(stepRaw)));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(k => k >= stepRaw);
+  const top = Math.ceil(max / step) * step;
+  const x = i => L + (W - L - R) * i / N, y = val => T + (Ht - T - Bm) * (1 - val / top);
+  let s = "";
+  for (let t = 0; t <= top + 1e-6; t += step) {
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" style="stroke:var(--line)" stroke-width="1"/>`;
+    s += `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" style="fill:var(--muted)">${t === 0 ? "0" : won(t)}</text>`;
+  }
+  for (let yr = 0; yr <= 10; yr += 2) s += `<text x="${x(yr * 12)}" y="${Ht - 10}" text-anchor="middle" font-size="11" style="fill:var(--muted)">${yr}년</text>`;
+  if (r.G > 0) {
+    s += `<line x1="${x(r.G)}" x2="${x(r.G)}" y1="${T}" y2="${Ht - Bm}" style="stroke:var(--muted)" stroke-dasharray="3 4"/>`;
+    s += `<text x="${x(r.G) + 5}" y="${T + 11}" font-size="11" style="fill:var(--muted)">거치 끝</text>`;
+  }
+  const ends = [];
+  series.forEach(se => {
+    const pts = se.d.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    s += `<polyline points="${pts}" fill="none" style="stroke:${se.c}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    s += `<circle cx="${x(N)}" cy="${y(se.d[N])}" r="4" style="fill:${se.c}"/>`;
+    ends.push({ yy: y(se.d[N]), last: se.d[N], se });
+  });
+  ends.sort((a, b) => a.yy - b.yy);
+  for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 28) ends[i].yy = ends[i - 1].yy + 28;
+  const over = ends[ends.length - 1].yy - (Ht - Bm);
+  if (over > 0) ends.forEach(e => { e.yy -= over; });
+  ends.forEach(e => {
+    s += `<text x="${x(N) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
+    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+  });
+  $("chart").innerHTML = s;
+}
+
+function renderTen(v, r) {
+  const g = v.growth / 100, gain = r.P * 10000 * (Math.pow(1 + g, 10) - 1);
+  const lines = [["사내 대출 그대로", r.A], ["사내 → 은행 갈아타기", r.B], ["처음부터 은행", r.C]].map(([n, s]) => {
+    const net = r.rentCum[N] - s.cumArr[N] + gain;
+    const be = H.breakEvenGrowth(r, s);
+    return `<div>${n}: <strong style="color:${net >= 0 ? "var(--own)" : "var(--rent)"}">${net >= 0 ? "+" : ""}${won(net)}원</strong> <span class="muted small">(${be === 0 ? "집값 그대로여도 이득" : `본전 집값 상승률 연 ${pct(be, 1)}`})</span></div>`;
+  });
+  $("ten").innerHTML = `<div class="muted small">10년 뒤 월세 대비 (집값 연 ${v.growth}% 가정)</div>` + lines.join("");
+}
+
+function renderRisks(v, r, rec) {
+  const items = [];
+  items.push(`<strong>사내 대출은 거치가 끝나면 부담이 커집니다.</strong> 그대로 갚으면 ${v.compGrace + 1}년차부터 매달 <strong>${won(r.compPay)}원</strong>을 ${v.compYears}년간 냅니다(연봉 대비 ${rec.dsr.A.toFixed(0)}%).`);
+  items.push(r.repay > 0
+    ? `<strong>갈아탈 때 은행이 ${won(r.refiAmt)}원까지만 빌려줍니다.</strong> 나머지 ${won(r.repay)}원은 직접 갚아야 하니 거치 기간 동안 매달 ${won(r.repay / Math.max(r.G, 1))}원씩 모아야 합니다.`
+    : `<strong>갈아타기는 지금 규제 기준으로 가능합니다.</strong> 사내 대출 ${won(r.C0)}원 전부를 은행으로 옮길 수 있습니다. 다만 그때 규제와 금리는 알 수 없습니다.`);
+  if (!v.dedOn) items.push(`<strong>갈아탄 대출은 소득공제를 못 받을 수 있습니다.</strong> 그래서 이 경로는 공제 없이 계산했습니다. 받을 수 있다고 확인되면 왼쪽 체크를 켜세요.`);
+  if (v.bankType === "mixed") items.push(`<strong>혼합형·변동 원리금균등은 공제 한도가 800만원입니다.</strong> 5년 주기형으로 바꾸면 1,800만원까지 공제됩니다.`);
+  if (!r.dedOK) items.push(`<strong>공시가가 6억을 넘어 이자 소득공제를 받을 수 없습니다.</strong>`);
+  $("risks").innerHTML = items.map(t => `<div class="callout">${t}</div>`).join("");
+}
+
+function renderFacts(v, r, base) {
+  const fy = H.firstYear(10000, v.bankRate, 360);
+  const c6 = H.firstYear(60000, v.bankRate, 360);
+  const ref6 = H.refund(v.salary, Math.min(c6.i, 1800));
+  const eff6 = (c6.i - ref6) / 60000 * 100;
+  const eff6hi = (c6.i - Math.min(c6.i, 1800) * .385) / 60000 * 100;
+  const in24 = Math.max(0, Math.min(1800, base - 5000));
+  const gap6 = ref6 - H.refund(v.salary, Math.min(c6.i, 800));
+  const items = [
+    ["ok", "맞음", "15년 이상 대출의 공제 한도는 2,000 / 1,800 / 800만원",
+      "고정금리 + 비거치식이면 2,000만, 둘 중 하나면 1,800만, 둘 다 아니면 800만입니다. 2024년 시행령 개정 내용과 같습니다."],
+    ["ok", "맞음", "고정금리로 인정되는 건 5년 주기형까지",
+      "시행령은 \"5년 이상의 기간 단위로 금리를 변경하는 경우\"를 고정금리에 포함합니다. 5년 고정 뒤 6개월 변동으로 바뀌는 혼합형이나 3년 고정은 해당하지 않습니다."],
+    ["ok", "맞음", "원리금균등은 초반에 비거치식 70% 요건을 못 맞춘다",
+      `30년 대출이면 매년 원금의 70% ÷ 30 = <b>2.33%</b> 이상 갚아야 합니다. 금리 ${pct(v.bankRate)} 원리금균등의 1년차 원금 상환은 <b>${pct(fy.p / 100)}</b>뿐입니다. 원금균등은 매년 3.33%라 항상 충족합니다.`],
+    ["ask", "미확인", "올해부터 중도상환으로 70% 맞춘 건 인정 안 해준다",
+      "커뮤니티와 상담 게시판에 사례 보고만 있습니다. 법령 개정이나 국세청 공식 발표는 찾지 못했습니다. 그래서 중도상환 전략은 계산에 넣지 않았습니다."],
+    ["ok", "맞음", "과표 6,800만 이상이면 1,800만 전액 26.4%, 1.06억 이상이면 38.5%",
+      `24% 구간이 5,000만~8,800만, 35% 구간이 8,800만~1.5억이라 계산은 맞습니다. 다만 연봉 ${won(v.salary)}이면 과표가 약 <b>${won(base)}</b>이라, 1,800만 중 <b>${won(in24)}</b>만 26.4%이고 나머지는 더 낮은 세율이 적용됩니다.`],
+    ["part", "부분", "공제 1,000만원 차이가 금리 0.5% 차이쯤 된다",
+      `과표가 높고 대출이 5억대일 때 이야기입니다. 이 입력값으로 6억 대출이면 차이는 연 <b>${won(gap6)}원</b>, 금리로 <b>${pct(gap6 / 600)}p</b>입니다.`],
+    ["part", "부분", "공시가 6억 이하 = 실거래가 약 10억",
+      `시세 대비 공시가 60%를 가정한 숫자입니다. 지금 입력한 ${v.pubRatio}%로는 <b>${eok(6 / (v.pubRatio / 100))}</b>입니다. 단지마다 다르니 실제 공시가를 확인해야 합니다.`],
+    ["part", "부분", "카카오뱅크는 5년 주기형 가입 가능, 중도상환수수료 없음",
+      "5년 주기형 상품과 중도상환해약금 면제 연장 보도는 확인했습니다. \"금융사 중 유일\"인지와 현재 금리는 확인하지 못했습니다."],
+    ["no", "과장", "4% 후반 주담대도 공제 받으면 체감 금리 3% 초반",
+      `6억, ${pct(v.bankRate)}, 1,800만 공제로 계산하면 연봉 ${won(v.salary)} 기준 실제 금리 <b>${pct(eff6)}</b>입니다. 과표 1.06억 이상(38.5%)이어도 <b>${pct(eff6hi)}</b>입니다.`],
+    ["ok", "맞음", "사내 저리 대출의 회사 지원분은 소득으로 잡힌다",
+      `세법상 인정 금리보다 싸게 빌린 차이는 근로소득으로 과세됩니다. 그래서 표면 ${pct(v.compRate, 1)}가 아니라 위 '사내 대출 실제 금리'로 비교해야 합니다.`],
+    ["part", "부분", "갈아탈 때 은행 한도는 최대 4억",
+      "2025-10-15 대책 기준으로 4억은 시가 15~25억 구간입니다. 15억 이하는 6억입니다. 몇 년 뒤 규제는 알 수 없습니다."]
+  ];
+  $("facts").innerHTML = items.map(([c, t, claim, why]) =>
+    `<div class="fact"><span class="pill ${c}">${t}</span><div class="claim">${claim}</div><div class="why">${why}</div></div>`).join("");
+}
+
+function renderLadder(v, r) {
+  const pFull = v.compMax / (v.compLtv / 100);
+  const pDed = 6 / (v.pubRatio / 100);
+  const pCashC = H.maxPrice(v, P => Math.min(v.compMax * 10000, P * 100 * v.compLtv));
+  const pCashB = H.maxPriceBank(v);
+  const scale = 15;
+  const rungs = [
+    { w: "사내 대출 한도를 꽉 채우는 집값", v: pFull, why: `${eok(v.compMax)} ÷ ${v.compLtv}%. 이보다 싸면 한도가 집값의 ${v.compLtv}%로 줄어듭니다.` },
+    { w: "이자 소득공제를 받을 수 있는 시세 상한", v: pDed, why: `공시가 6억 ÷ 공시가 비율 ${v.pubRatio}% (추정). 조건은 취득 당시 공시가 6억 이하입니다.` },
+    { w: "사내 대출로 살 수 있는 최고가", v: pCashC, why: `자기자금 ${eok(v.own)} + 사내 대출 + 보증보험구입대출 최대 3억 − 취득세·중개비` },
+    { w: "은행 주담대로 살 수 있는 최고가", v: pCashB, why: `자기자금 ${eok(v.own)} + 은행 min(${eok(v.bankCap)}, 집값×${v.bankLtv}%) + 보증보험구입대출 − 취득세·중개비. 연봉 기준 DSR 40% 안에서 계산` }
+  ];
+  const mark = Math.min(v.price, scale) / scale * 100;
+  $("ladder").innerHTML = rungs.map(g => `
+    <div class="rung"><div class="what">${g.w}</div><div class="v">${eok(g.v)}</div>
+      <div class="bar"><i style="width:${Math.min(g.v, scale) / scale * 100}%"></i><b style="left:calc(${mark}% - 1px)"></b></div>
+      <div class="why">${g.why}${g.v > scale ? " (막대는 15억까지만 표시)" : ""}</div></div>`).join("");
+}
+
+function renderChecks(v, r, rec) {
+  const d = rec.dsr;
+  const items = [
+    [r.dedOK ? "ok" : "no", r.dedOK ? "충족" : "초과", `공시가 6억 이하 (추정 ${eok(r.pub)})`, "이자 소득공제 조건. 실제 공시가는 부동산 공시가격 알리미에서 확인"],
+    [r.fc.shortfall > 0 ? "no" : "ok", r.fc.shortfall > 0 ? "부족" : "충분", r.fc.shortfall > 0 ? `사내 대출 경로: 자금 ${won(r.fc.shortfall)}원 부족` : "사내 대출 경로 자금 충분", `보증보험구입대출 ${won(r.fc.smg)}원 사용`],
+    [r.fb.shortfall > 0 ? "no" : "ok", r.fb.shortfall > 0 ? "부족" : "충분", r.fb.shortfall > 0 ? `은행 경로: 자금 ${won(r.fb.shortfall)}원 부족` : "은행 경로 자금 충분", `보증보험구입대출 ${won(r.fb.smg)}원 사용`],
+    [d.C <= 40 ? "ok" : "no", d.C <= 40 ? "여유" : "초과", `처음부터 은행: DSR 약 ${d.C.toFixed(1)}%`, "은행 40% 기준, 스트레스 금리 제외 단순 계산"],
+    [d.B <= 40 ? "ok" : "no", d.B <= 40 ? "여유" : "초과", `갈아탄 뒤 DSR 약 ${d.B.toFixed(1)}%`, "같은 기준"],
+    ["ask", "확인", "사내 대출의 주택 조건", "회사마다 집값 상한, 면적, 전입 기한, 근저당 순위 조건이 다릅니다."]
+  ];
+  $("checks").innerHTML = items.map(([c, t, p, dd]) => `<div class="chk"><span class="pill ${c}">${t}</span><p>${p}</p><span class="d">${dd}</span></div>`).join("");
+}
+
+function renderProducts(v, r) {
+  const rows = [
+    ["금리", `연 ${pct(v.compRate, 1)} (지원분 과세)`, `${pct(v.smgRate)} 변동 (예시)`, `${pct(v.bankRate)} (입력값)`],
+    ["한도", `${eok(v.compMax)} · 집값 ${v.compLtv}%`, "최대 3억 (근속 등 조건)", `${eok(v.bankCap)} · LTV ${v.bankLtv}% · DSR 40% → 지금 ${won(r.bankMax)}`],
+    ["상환", `${v.compGrace}년 거치 + ${v.compYears}년 원리금균등`, "10년 원금균등", "30년"],
+    ["담보", "근저당 (회사 조건)", "없음 (보증보험료 본인 부담)", "근저당"],
+    ["이자 소득공제", "대상 아님 (추론)", "대상 아님", "주기형 1,800 · 혼합형 800"],
+    ["숨은 비용", "회사 지원분에 소득세", "보증보험료", "DSR·LTV 규제"]
+  ];
+  $("prod").innerHTML = rows.map(rw => `<tr>${rw.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+}
+
+$("inputs").addEventListener("input", render);
+$("inputs").addEventListener("change", render);
+$("inputs").addEventListener("submit", e => e.preventDefault());
+render();
+})();
+</script>
+</body>
+</html>

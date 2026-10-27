@@ -1,0 +1,9 @@
+{
+  "name": "homewise",
+  "version": "1.0.0",
+  "private": true,
+  "description": "월세는 사라지고, 집은 남는다. 사내 저리 대출·은행 주담대·월세 비교 계산기",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
