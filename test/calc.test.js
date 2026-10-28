@@ -124,3 +124,13 @@ test("보수적 최고가: 매달 나가는 돈 + 갈아탈 때 갚을 돈 모�
   assert.ok(H.maxPriceSafe(v, 40) < P, "기준이 낮으면 더 낮다");
   assert.ok(H.maxPriceSafe({ ...v, salary: 8000 }, 50) > P, "연봉이 높으면 더 높다");
 });
+
+test("지금 살까, 기다릴까: 집값이 그대로면 월세 + 취득비용 − 지금 산 쪽 비용", () => {
+  const r = H.simulate(base);
+  const w = H.waitCost(base, r, r.B, 2, 0);
+  near(w.cost, r.rentCum[24] + H.buyCosts(base.price, true).total - r.B.cumArr[24], 1e-6, "2년");
+  assert.equal(w.up, 0);
+  const up = H.waitCost(base, r, r.B, 2, 5.6);
+  assert.ok(up.cost > w.cost, "집값이 오르면 기다린 비용이 더 크다");
+  near(up.up, 80000 * (1.056 ** 2 - 1), 1e-6, "오른 집값");
+});
