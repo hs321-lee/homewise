@@ -7,48 +7,50 @@
 <meta name="description" content="월세는 사라지고, 집은 남는다. 사내 저리 대출·은행 주담대·월세를 비교하는 상담용 계산기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
 <style>
-/* Layout: 위 메뉴 탭(비교 · 계산 · 무엇을 살까 · 인사이트) + 왼쪽 상담 입력(데스크톱 sticky) + 오른쪽 탭 내용.
-   입력값을 쓰지 않는 인사이트 화면(한눈에·송희구·손품왕)은 입력 패널을 숨기고 넓게 보여줍니다(.layout.solo). */
+/* Layout: 위 메뉴 탭(비교 · 계산 · 무엇을 살까 · 인사이트). 조건 입력 폼은 계산 탭에만 있고(.layout.with-inputs),
+   다른 탭은 맨 위 "내 조건" 한 줄로 같은 값을 보여줍니다. 입력값은 이 브라우저에 저장됩니다. */
 :root{
+  /* 에르메스 오렌지(서울 3호선 주황과 같은 계열) + 아이보리 종이 + 에스프레소 잉크. 차트 4색은 validate_palette.js 통과 */
   color-scheme:light;
-  --bg:#f3f5f4; --surface:#ffffff; --sunk:#e9eeec;
-  --ink:#16302b; --muted:#5b6d68; --line:#d5dedb;
-  --own:#1d6b52;  --own-soft:#dcefe6;
-  --bank:#2f5f9e; --bank-soft:#e0e9f6;
-  --rent:#b04a3a; --rent-soft:#f6e3df;
-  --keep:#6b5aa6;
-  --warn:#9a6a00; --warn-soft:#fbefcf;
+  --bg:#f7f2ea; --surface:#fffcf7; --sunk:#f0e8dc;
+  --ink:#2b1f17; --muted:#7a685a; --line:#e6dacb;
+  --own:#d95f14;  --own-soft:#fbe6d6;
+  --bank:#2a5da8; --bank-soft:#e3ebf6;
+  --rent:#a33a6a; --rent-soft:#f6e4ec;
+  --keep:#00918c;
+  --warn:#a8701e; --warn-soft:#f8ecd6;
   --font-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --font-num:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-display:"Noto Serif KR","Nanum Myeongjo",serif;
+  --font-num:"Noto Serif KR","Nanum Myeongjo",serif;
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#101614; --surface:#18201e; --sunk:#1f2a27;
-  --ink:#e4ece9; --muted:#9aaba6; --line:#2e3b37;
-  --own:#5cc59b; --own-soft:#1d3a2f; --bank:#86aee8; --bank-soft:#1d2b40;
-  --rent:#e58a79; --rent-soft:#40231e;
-  --keep:#a898e0; --warn:#e2b44a; --warn-soft:#3a2f14; color-scheme:dark}}
+  --bg:#17120e; --surface:#211a15; --sunk:#2a221c;
+  --ink:#f2e8dc; --muted:#b4a493; --line:#3a2f27;
+  --own:#e06a22; --own-soft:#3d2414; --bank:#5b7fe8; --bank-soft:#1c2738;
+  --rent:#b04e86; --rent-soft:#3a1f2c;
+  --keep:#27a3a3; --warn:#e0ae5a; --warn-soft:#3a2c15; color-scheme:dark}}
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{display:grid;gap:6px;margin-bottom:22px}
-.brand{font-family:var(--font-num);font-size:13px;letter-spacing:.14em;font-weight:600;color:var(--own)}
-h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700}
+.brand{font-family:var(--font-display);font-size:13px;letter-spacing:.32em;font-weight:600;color:var(--own)}
+h1{font-family:var(--font-display);font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.01em}
 h1 em{font-style:normal;color:var(--own)}
 .lede{margin:0;color:var(--muted);max-width:66ch}
-h2{font-size:17px;margin:0;font-weight:700;text-wrap:balance}
+h2{font-family:var(--font-display);font-size:18px;margin:0;font-weight:700;text-wrap:balance}
 h3{font-size:14px;margin:0;font-weight:600}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
 
-.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
-@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+.layout.with-inputs{grid-template-columns:320px minmax(0,1fr)}
+@media (max-width:880px){.layout,.layout.with-inputs{grid-template-columns:minmax(0,1fr)}}
 
-.layout.solo{grid-template-columns:minmax(0,1fr)}
-.layout.solo .panel{display:none}
+.layout:not(.with-inputs) .panel{display:none}
 
 /* 메뉴 탭: 북클럽처럼 밑줄 하나가 선택한 탭으로 미끄러짐 */
 .menu{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 0 20px;border-bottom:1px solid var(--line)}
@@ -70,18 +72,14 @@ h3{font-size:14px;margin:0;font-weight:600}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:18px;
   position:sticky;top:62px;max-height:calc(100vh - 74px);overflow:auto}
 @media (max-width:880px){.panel{position:static;max-height:none}}
-/* 좁은 화면: 입력 폼이 첫 화면을 다 차지해 탭을 눌러도 내용이 안 보이므로, 한 줄 요약으로 접고 눌렀을 때만 펼침 */
-.inputs-toggle{display:none}
-@media (max-width:880px){
-  .inputs-toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;font:inherit;font-size:13.5px;text-align:left;
-    padding:11px 14px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;cursor:pointer}
-  .inputs-toggle .cap{color:var(--muted);font-size:12px;font-weight:600;margin-right:8px}
-  .inputs-toggle .act{color:var(--own);font-weight:600;white-space:nowrap}
-  .inputs-toggle .act::after{content:" ▾"}
-  .inputs-toggle[aria-expanded=true] .act::after{content:" ▴"}
-  .layout:not(.inputs-open) .panel{display:none}
-}
-.layout.solo .inputs-toggle{display:none}
+/* 다른 탭 맨 위의 "내 조건" 한 줄 */
+.cond{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;padding:11px 16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+.cond .cap{color:var(--muted);font-size:12px;font-weight:600;margin-right:8px;letter-spacing:.04em}
+.cond button,.panel .reset{font:inherit;font-size:13px;font-weight:600;color:var(--own);background:none;border:1px solid var(--own);border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap}
+.cond button:hover,.panel .reset:hover{background:var(--own-soft)}
+.cond[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel-head h2{font-size:16px}
 .group{display:grid;gap:12px}
 .group>h3{font-size:12px;letter-spacing:.06em;color:var(--muted)}
 details.group>summary{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600;cursor:pointer}
@@ -105,7 +103,7 @@ section.block{display:grid;gap:12px;min-width:0}
 /* 추천 */
 .rec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--own);border-radius:10px;padding:18px 20px;display:grid;gap:10px}
 .rec .label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
-.rec .title{font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
+.rec .title{font-family:var(--font-display);font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
 .rec .reason{margin:0;font-size:14.5px}
 .paths{display:grid;gap:6px}
 .path{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;font-size:13.5px}
@@ -172,6 +170,21 @@ tr.total td{font-weight:700;background:var(--sunk)}
 .pick-meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--muted)}
 .pick-meta button{font:inherit;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--own);background:var(--surface);color:var(--own);cursor:pointer}
 .pick-meta button:hover{background:var(--own-soft)}
+.chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.yes{border-color:var(--own);color:var(--own);background:var(--own-soft)}
+.chip.no{color:var(--muted);background:var(--sunk)}
+.chip.region{border-color:var(--bank);color:var(--bank)}
+.pick-budget{margin:0;font-size:14px}
+.pick-budget b{font-family:var(--font-num);color:var(--own)}
+.regions{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:7px}
+.region-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13.5px}
+.region{display:grid;grid-template-columns:96px minmax(0,1fr) 52px;align-items:center;gap:10px;font-size:13px}
+.region i{display:block;height:8px;border-radius:4px;background:var(--sunk);position:relative;overflow:hidden}
+.region i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:4px;background:var(--muted)}
+.region.hl i::after{background:var(--own)}
+.region b{font-family:var(--font-num);text-align:right;font-weight:600}
+.regions p{margin:2px 0 0}
 .bar{grid-column:1/-1;position:relative;height:6px;background:var(--sunk);border-radius:3px}
 .bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--own)}
 .bar b{position:absolute;top:-4px;width:2px;height:14px;background:var(--ink)}
@@ -203,7 +216,7 @@ table.cmp td:first-child{font-weight:600}
 table.cmp a{color:var(--own);font-weight:600}
 .talk-head{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--keep);border-radius:10px;padding:16px 20px;display:grid;gap:6px}
 .talk-head .who{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:600}
-.talk-head .gist{font-size:clamp(17px,2.3vw,21px);font-weight:700;line-height:1.35;text-wrap:balance}
+.talk-head .gist{font-family:var(--font-display);font-size:clamp(17px,2.3vw,21px);font-weight:700;line-height:1.35;text-wrap:balance}
 .talk-head p{margin:0;font-size:13px;color:var(--muted)}
 .ins{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:ins}
 @media (max-width:760px){.ins{grid-template-columns:minmax(0,1fr)}}
@@ -228,7 +241,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <header class="top">
     <div class="brand">HOMEWISE</div>
     <h1>월세는 사라지고, <em>집은 남는다</em></h1>
-    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 상황을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 예시입니다.</p>
+    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 조건을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 · 모은 돈 1억 예시이고, 계산 탭에서 바꿀 수 있습니다.</p>
   </header>
 
   <nav class="menu" aria-label="Homewise 메뉴">
@@ -241,19 +254,17 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   </nav>
 
   <div class="layout" id="layout">
-    <button type="button" class="inputs-toggle" id="inputs-toggle" aria-expanded="false" aria-controls="inputs">
-      <span><span class="cap">내 상황</span><span id="inputs-sum"></span></span><span class="act" id="inputs-act">수정</span>
-    </button>
     <form class="panel" id="inputs" autocomplete="off">
-      <div class="sample">예시 값입니다. 상담받는 분의 상황으로 바꿔 주세요.</div>
+      <div class="panel-head"><h2>내 조건</h2><button type="button" class="reset" id="reset">기본값으로</button></div>
+      <div class="sample">예시 값입니다(연봉 8,000만 · 모은 돈 1억). 내 상황으로 바꾸면 이 브라우저에 저장되고 모든 탭에 반영됩니다.</div>
 
       <div class="group">
         <h3>지금 상황</h3>
         <div class="field"><div class="row"><label for="salary">총연봉</label><output id="o-salary"></output></div>
           <input type="range" id="salary" min="3000" max="20000" step="100" value="8000">
           <div class="hint" id="h-base"></div></div>
-        <div class="field"><div class="row"><label for="own">쓸 수 있는 자기자금</label><output id="o-own"></output></div>
-          <input type="range" id="own" min="0" max="10" step="0.1" value="2.5">
+        <div class="field"><div class="row"><label for="own">모은 돈 (자기자금)</label><output id="o-own"></output></div>
+          <input type="range" id="own" min="0" max="10" step="0.1" value="1">
           <div class="hint">모자라는 돈은 보증보험구입대출(최대 3억)로 자동으로 채웁니다.</div></div>
         <div class="field"><div class="row"><label for="rentDeposit">지금 월세 보증금</label><output id="o-rentDeposit"></output></div>
           <input type="range" id="rentDeposit" min="0" max="5" step="0.1" value="1"></div>
@@ -264,7 +275,8 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
       <div class="group">
         <h3>사려는 집</h3>
         <div class="field"><div class="row"><label for="price">집값 (시세)</label><output id="o-price"></output></div>
-          <input type="range" id="price" min="3" max="15" step="0.1" value="8"></div>
+          <input type="range" id="price" min="3" max="15" step="0.1" value="6">
+          <div class="hint" id="h-price"></div></div>
         <div class="field"><div class="row"><label for="pubRatio">공시가 / 시세 비율</label><output id="o-pubRatio"></output></div>
           <input type="range" id="pubRatio" min="55" max="90" step="1" value="69">
           <div class="hint" id="h-pub"></div></div>
@@ -280,13 +292,17 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <option value="mixed">혼합형·변동 · 원리금균등 → 800만</option>
           </select></div>
         <div class="field"><div class="row"><label for="bankRate">금리</label><output id="o-bankRate"></output></div>
-          <input type="range" id="bankRate" min="3" max="6" step="0.05" value="4.7">
-          <div class="hint">갈아탈 때도 같은 금리로 계산합니다.</div></div>
+          <input type="range" id="bankRate" min="3" max="7" step="0.05" value="5">
+          <div class="hint">5대 은행 5년 고정 4.61~6.65% (2026-10-27) · 기준금리 3.00% (10-22 동결). 갈아탈 때도 같은 금리로 계산합니다.</div></div>
+        <div class="field"><div class="row"><label for="stress">스트레스 금리 (DSR 계산용)</label><output id="o-stress"></output></div>
+          <input type="range" id="stress" min="0" max="3" step="0.5" value="3">
+          <div class="hint">수도권·규제지역 주담대 3.0%. 한도 계산에만 더하고, 5년 주기형은 30%·혼합형은 60%만 반영합니다.</div></div>
         <div class="field"><div class="row"><label for="bankCap">한도</label><output id="o-bankCap"></output></div>
           <input type="range" id="bankCap" min="2" max="6" step="0.5" value="6">
           <div class="hint">2025-10-15 대책: 시가 15억 이하 6억, 15~25억 4억</div></div>
         <div class="field"><label for="bankLtv">LTV</label>
-          <select id="bankLtv"><option value="70" selected>70% (생애최초 또는 비규제지역)</option><option value="40">40% (규제지역 일반)</option></select></div>
+          <select id="bankLtv"><option value="70" selected>70% (생애최초 또는 비규제지역)</option><option value="40">40% (규제지역 일반)</option></select>
+          <div class="hint">수원 영통·용인 수지 등 규제지역도 생애최초는 70% 유지(6개월 내 전입). 인천·파주·군포 등 비규제지역은 일반도 70%.</div></div>
       </div>
 
       <details class="group" open>
@@ -318,7 +334,8 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
           <input type="range" id="m2Rate" min="0" max="10" step="0.1" value="5.6">
           <div class="hint">2026년 8월 M2 4,266.8조원, 1년 전보다 5.6% 증가 (한국은행)</div></div>
         <div class="field"><div class="row"><label for="depRate">예금 금리 (묶인 돈의 기회비용)</label><output id="o-depRate"></output></div>
-          <input type="range" id="depRate" min="0" max="5" step="0.1" value="2.5"></div>
+          <input type="range" id="depRate" min="0" max="5" step="0.1" value="3">
+          <div class="hint">시중은행 1년 정기예금 최고 3% 안팎 (2026-09)</div></div>
         <label class="check"><input type="checkbox" id="oppOn" checked><span>묶인 돈의 예금이자도 비용으로 계산</span></label>
         <div class="field"><div class="row"><label for="growth">집값 상승률 (연)</label><output id="o-growth"></output></div>
           <input type="range" id="growth" min="-3" max="6" step="0.5" value="0">
@@ -327,6 +344,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
     </form>
 
     <main class="results">
+      <div class="cond" id="cond"><span><span class="cap">내 조건</span><span id="cond-sum"></span></span><button type="button" id="cond-edit">조건 바꾸기 →</button></div>
       <div class="tabpanel" id="p-compare" role="tabpanel" aria-labelledby="tab-compare">
         <section class="block" aria-labelledby="t-rec">
           <h2 id="t-rec" hidden>추천 경로</h2>
@@ -407,7 +425,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li><strong>사내 대출에서 갈아탄 대출의 소득공제.</strong> 대환 공제는 기존 대출이 공제 대상(금융회사 등에서 빌린 장기주택저당차입금)일 때 인정됩니다. 회사에서 빌린 대출은 여기에 들어가지 않을 가능성이 높아 기본값은 공제 없음입니다(추론). 국세청 126에 확인하세요.</li>
             <li><strong>갈아탈 때의 은행 한도·LTV.</strong> 지금 규제(2025-10-15 대책) 기준입니다. 몇 년 뒤 규제는 알 수 없습니다.</li>
             <li>은행 5년 주기형의 실제 금리는 상담 시점에 은행에서 확인해 넣어 주세요.</li>
-            <li>DSR은 스트레스 금리 없이 단순 계산했습니다.</li>
+            <li>DSR의 은행 대출은 금리에 스트레스 금리를 더해 계산합니다(5년 주기형 30%·혼합형 60% 반영). 보증보험구입대출에는 더하지 않았습니다. 은행마다 적용이 다를 수 있습니다.</li>
           </ul>
           <h3>참고 자료</h3>
           <ul>
@@ -416,7 +434,10 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>중도상환 인정 논란: <a href="https://www.clien.net/service/board/park/19126997" target="_blank" rel="noopener">클리앙 게시글</a></li>
             <li>카카오뱅크 중도상환해약금 면제 연장: <a href="https://biz.sbs.co.kr/amp/article/20000239059" target="_blank" rel="noopener">SBS Biz</a></li>
             <li>통화량: <a href="https://biz.sbs.co.kr/amp/article/20000340139" target="_blank" rel="noopener">SBS Biz, 8월 시중 통화량 4267조원</a> (한국은행 2026-10-15 발표)</li>
-            <li>실거래: <a href="https://dapt.kr/apt/BrA002.html" target="_blank" rel="noopener">매탄위브하늘채</a> · <a href="https://news.nate.com/view/20260418n07478" target="_blank" rel="noopener">매탄현대힐스테이트</a> · <a href="https://m.richgo.ai/realty/danji/a2EdQCw" target="_blank" rel="noopener">영통아이파크캐슬2단지</a> · <a href="https://www.newstomato.com/ReadNews.aspx?no=1190184" target="_blank" rel="noopener">광교 중흥S클래스</a></li>
+            <li>금리: <a href="https://www.fnnews.com/news/202610270605559385" target="_blank" rel="noopener">파이낸셜뉴스 2026-10-27, 5대 은행 5년 고정 4.61~6.65%</a> · <a href="https://www.fntimes.com/html/view.php?ud=202610221201381124179ad43907_18" target="_blank" rel="noopener">한국금융신문, 기준금리 3.00% 동결</a></li>
+            <li>LTV·스트레스 DSR: <a href="https://v.daum.net/v/20251017204647239" target="_blank" rel="noopener">생애최초 LTV 70% 유지</a> · <a href="https://biz.heraldcorp.com/article/10593711" target="_blank" rel="noopener">헤럴드경제, 수원 영통 LTV 40%</a> · <a href="https://www.banksalad.com/articles/%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4-DSR-%EA%B7%9C%EC%A0%9C-%EC%A0%84%EC%84%B8%EB%8C%80%EC%B6%9C-%EB%8B%A8%EA%B3%84" target="_blank" rel="noopener">스트레스 DSR 3단계 정리</a> · <a href="https://kbthink.com/main/real-estate/basic-information/first-time-real-estate/2025/first-time-real-estate-250327.html" target="_blank" rel="noopener">주기형 30%·혼합형 60%</a></li>
+            <li>전고점 회복: <a href="https://www.viva100.com/article/20261012501064" target="_blank" rel="noopener">브릿지경제, 직방 3분기 집계</a> · <a href="https://www.etoday.co.kr/news/view/2634506" target="_blank" rel="noopener">이투데이</a></li>
+            <li>실거래: <a href="https://m.news.nate.com/view/20260724n22681" target="_blank" rel="noopener">호반써밋송도</a> · <a href="https://m.news.nate.com/view/20260714n22474" target="_blank" rel="noopener">e편한세상송도</a> · <a href="https://m.richgo.ai/realty/danji/a1xrYXn" target="_blank" rel="noopener">래미안부평</a> · <a href="https://keyzard.cc/views/nb/NDo2Kz4tMG5vb2tlZW1ta2xmZmltZm9vag" target="_blank" rel="noopener">부평역해링턴플레이스</a> · <a href="https://www.aptrank.com/apt_recent.php?addcode=28237&amp;pgroup=30" target="_blank" rel="noopener">부평구 30평대 순위</a> · <a href="https://www.news1.kr/realestate/general/5971217" target="_blank" rel="noopener">운정</a></li>
             <li>인사이트: 부읽남·송희구·손품왕 강연 녹취를 요약했습니다. 원문과 질의응답의 개인 사례는 싣지 않습니다.</li>
           </ul>
         </section>
@@ -424,11 +445,22 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
 
       <div class="tabpanel" id="p-pick" role="tabpanel" aria-labelledby="tab-pick" hidden>
         <section class="block" aria-labelledby="t-pick">
-          <div class="block-head"><h2 id="t-pick">무엇을 살까: 수원 매탄·망포 생활권 대장</h2><span class="muted small">84㎡ 기준 · 국토부 실거래 집계 · 2026-07까지</span></div>
-          <div class="callout"><strong>고르는 기준 (강연 요약)</strong><br>
-            ① 좋은 동네의 애매한 단지보다 한 단계 아래 동네의 대장을 삽니다. 나중에 갈아타기 쉽습니다. <span class="muted">(부읽남)</span><br>
-            ② 2023년 초 저점보다 다시 오른 단지, 하락장(2022~2023)에도 거래가 꾸준했던 단지를 고릅니다. <span class="muted">(송희구)</span><br>
-            ③ 생활권 아파트를 가격 순으로 5등분했을 때 중간(3분위) 아래로 내려가지 않습니다. <span class="muted">(손품왕)</span><br>
+          <div class="block-head"><h2 id="t-pick">무엇을 살까: 아직 덜 오른 곳, 내 예산 안에서</h2><span class="muted small">84㎡ 기준 · 2026-10 확인</span></div>
+          <p class="pick-budget" id="pick-budget"></p>
+          <div class="regions">
+            <div class="region-head"><b>2021년 전고점 이상에서 거래된 비중</b><span class="muted small">2026년 3분기, 직방 집계</span></div>
+            <div class="region"><span>성남 분당</span><i style="--w:94.1%"></i><b>94.1%</b></div>
+            <div class="region"><span>서울</span><i style="--w:54.7%"></i><b>54.7%</b></div>
+            <div class="region"><span>경기 전체</span><i style="--w:22.4%"></i><b>22.4%</b></div>
+            <div class="region hl"><span>인천 부평구</span><i style="--w:9.9%"></i><b>9.9%</b></div>
+            <div class="region hl"><span>인천 연수구</span><i style="--w:6.8%"></i><b>6.8%</b></div>
+            <div class="region hl"><span>파주</span><i style="--w:4%"></i><b>4.0%</b></div>
+            <p class="muted small">낮을수록 아직 2021년 고점을 회복하지 못한 거래가 많다는 뜻입니다. 수원 영통·용인 수지는 이미 많이 올랐고 규제지역(일반 LTV 40%, 토지거래허가 실거주 의무)이라 이번 목록에서 뺐습니다.</p>
+          </div>
+          <div class="callout"><strong>고르는 기준</strong><br>
+            ① 덜 오른 지역 안에서도 역세권·대단지·신축 대장만 봅니다. 한 단계 아래 동네의 대장이 갈아타기 쉽습니다. <span class="muted">(부읽남)</span><br>
+            ② 다만 덜 오른 곳은 회복력이 약할 수도 있습니다. 2023년 초 저점보다는 다시 올랐는지, 하락장에도 거래됐는지 꼭 확인합니다. <span class="muted">(송희구)</span><br>
+            ③ 2026년에는 상승이 가격 순위 4·3분위로 번진다는 전망입니다. 그 지역 안에서 중간 아래로는 내려가지 않습니다. <span class="muted">(손품왕)</span><br>
             <a class="more" href="#insight">세 강연 비교해서 보기 →</a></div>
           <div class="ladder" id="picks"></div>
         </section>
@@ -560,7 +592,21 @@ const H = window.Homewise;
 const { won, eok, pct, avg, N } = H;
 const $ = id => document.getElementById(id);
 const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
-  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears"];
+  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress"];
+const STORE = "homewise-inputs-v2";
+const defaults = {};
+ids.forEach(id => { const el = $(id); defaults[id] = el.type === "checkbox" ? el.checked : el.value; });
+
+// 저장된 내 조건 불러오기 (사생활 보호 모드 등에서 저장소가 막혀 있으면 기본값 그대로)
+function load() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { saved = null; }
+  if (!saved) return;
+  ids.forEach(id => { if (id in saved) { const el = $(id); if (el.type === "checkbox") el.checked = !!saved[id]; else el.value = saved[id]; } });
+}
+function save(v) {
+  try { localStorage.setItem(STORE, JSON.stringify(v)); } catch (e) { /* 저장 못 해도 계산은 계속 */ }
+}
 
 function read() {
   const v = {};
@@ -579,12 +625,16 @@ function showInputs(v) {
   set("growth", (v.growth > 0 ? "+" : "") + v.growth.toFixed(1) + "%");
   set("m2Rate", pct(v.m2Rate, 1)); set("compRate", pct(v.compRate, 1)); set("compLegal", pct(v.compLegal, 1)); set("compMax", eok(v.compMax));
   set("compLtv", v.compLtv + "%"); set("compGrace", v.compGrace + "년"); set("compYears", v.compYears + "년");
+  set("stress", "+" + v.stress.toFixed(1) + "%p");
 }
 
 function render() {
   const v = read();
   showInputs(v);
-  $("inputs-sum").textContent = `연봉 ${won(v.salary)} · 자기자금 ${eok(v.own)} · 집값 ${eok(v.price)}`;
+  save(v);
+  $("cond-sum").textContent = `연봉 ${won(v.salary)} · 모은 돈 ${eok(v.own)} · 집값 ${eok(v.price)} · 금리 ${pct(v.bankRate)}`;
+  const safe = H.maxPriceSafe(v, 35);
+  $("h-price").textContent = `보수적 최고가 약 ${eok(safe)} (처음 몇 년 나가는 돈 ≤ 세후 월소득 35%)`;
   const r = H.simulate(v);
   const rec = H.recommend(v, r);
   const base = H.taxBase(v.salary, 0, 0);
@@ -642,7 +692,7 @@ function renderRec(v, r, rec) {
   }).join("");
   if (!rec.best) {
     $("rec").innerHTML = `<div class="label">추천 경로</div><div class="title">지금 조건으로는 무리 없는 경로가 없습니다</div>
-      <p class="reason">자기자금을 늘리거나 집값을 낮춰 보세요. 아래 "얼마짜리 집까지 되나"에서 가능한 가격을 볼 수 있습니다.</p><div class="paths">${rows}</div>`;
+      <p class="reason">자기자금을 늘리거나 집값을 낮춰 보세요. 계산 탭의 "얼마짜리 집까지 되나"에서 가능한 가격을 볼 수 있습니다.</p><div class="paths">${rows}</div>`;
     return;
   }
   const b = rec.best, gapRent = r.rentCum[N] - b.sim.cumArr[N];
@@ -701,36 +751,57 @@ function renderMoney(v, r, rec) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(10) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
   });
   $("nw").innerHTML = s;
   $("nw-note").innerHTML = `<div>매수 경로: <strong>${rec.best ? rec.best.name : "사내 → 은행 갈아타기"}</strong>. 두 사람은 매달 같은 돈을 쓰고, 덜 쓰는 쪽이 차액을 예금(${pct(v.depRate, 1)})에 넣는다고 계산했습니다.</div>
     <div class="muted small">집값이 통화량만큼 오른다는 것은 강의의 주장이자 가정입니다. 실제 집값은 지역·단지마다 다르고 떨어질 수도 있습니다.</div>`;
 }
 
+// 아직 덜 오른 곳: 직방 3분기 집계에서 전고점 이상 거래 비중이 가장 낮은 인천·파주 중 역세권·대단지·신축 위주.
+// 모두 비규제지역(LTV 70%, 토지거래허가 실거주 의무 없음). 가격은 뉴스·시세 사이트의 실거래 보도 기준
 const PICKS = [
-  { name: "광교중흥S클래스 · 광교자연앤힐스테이트", area: "광교", price: null, range: "84㎡ 15~20억 (2026 보도)", note: "광교 대장. 무주택 첫 집으로는 자금 수준이 다릅니다." },
-  { name: "영통아이파크캐슬2단지", area: "망포동 · 2019년 · 1,162세대", price: 10.8, range: "84㎡ 10.7~10.8억 (2026-05~07 실거래)", note: "망포 신축 대단지. 공시가 6억을 넘을 가능성이 높아 이자 소득공제는 어렵습니다(추정)." },
-  { name: "힐스테이트영통", area: "망포동 · 2,140세대", price: null, range: "매매가 미확인 · 전세 33평 6.3억 (2026-07)", note: "망포동 대장주로 불리는 단지. 매매가는 실거래 조회로 확인하세요." },
-  { name: "매탄위브하늘채", area: "매탄동", price: 8.1, range: "84㎡ 7.7~8.5억 (2026-06~07 실거래)", note: "매탄동 대장. 2026년 10월 매탄동 거래량 1위. 공시가 6억 이하 구간이라 이자 소득공제도 노려볼 수 있습니다." },
-  { name: "매탄현대힐스테이트", area: "매탄동 · 2006년 · 2,328세대", price: 6.35, range: "84㎡ 평균 6.35억 (최근 6개월, 2026-07)", note: "구축 대단지. 강의 기준으로는 대장보다 한 단계 아래입니다." }
+  { name: "호반써밋송도", area: "인천 연수구 송도동", meta: "2023년 · 1,820세대", price: 6.5, range: "84㎡ 6.0~7.1억 (2026-06~07 실거래)",
+    region: "연수구 전고점 이상 거래 6.8%", checks: { big: true, newish: true, lead: null, station: null },
+    note: "송도 안에서도 공급이 많던 쪽이라 회복이 더딥니다. GTX-B(인천대입구역)는 2030년 예정이라 강연 기준으로는 호재보다 입지로 판단합니다." },
+  { name: "e편한세상송도", area: "인천 연수구 송도동", meta: "2018년 · 2,708세대", price: 6.6, range: "84㎡ 6.4~6.9억 (2026-04~07 실거래)",
+    region: "연수구 전고점 이상 거래 6.8%", checks: { big: true, newish: true, lead: null, station: null },
+    note: "대단지라 하락장에도 거래가 이어지는 편인지(환금성)를 2022~2023년 거래 건수로 확인해 보세요." },
+  { name: "래미안부평", area: "인천 부평구 부평동", meta: "", price: 6.6, range: "84㎡ 6.6억 (2026-05 실거래)",
+    region: "부평구 전고점 이상 거래 9.9%", checks: { big: null, newish: false, lead: false, station: null },
+    note: "84㎡ 거래가 적어 시세 대표성이 낮습니다. 송희구 기준으로는 거래가 적은 이유(안 팔리는지)를 먼저 봐야 합니다." },
+  { name: "부평역해링턴플레이스", area: "인천 부평구", meta: "1,909세대", price: 7.35, range: "84㎡ 7.35억 (2026 하반기 실거래)",
+    region: "부평구 전고점 이상 거래 9.9%", checks: { big: true, newish: true, lead: true, station: null },
+    note: "부평 대장권. 역까지 걸어서 몇 분인지는 확인이 필요합니다. 보수적 예산은 넘지만 최대 대출이면 가능한 구간입니다." },
+  { name: "부평SK뷰해모로", area: "인천 부평구 부평동", meta: "2023년 · 1,559세대 · 1호선", price: 7.6, range: "84㎡ 7.6억 (2025-12 실거래)",
+    region: "부평구 전고점 이상 거래 9.9%", checks: { big: true, newish: true, lead: true, station: true },
+    note: "부평 신축 대장. 최근 거래가 2025년 말이라 지금 호가는 더 높을 수 있습니다." },
+  { name: "운정신도시아이파크", area: "파주 동패동 · 운정", meta: "GTX-A 운정중앙역", price: null, range: "84㎡ 7.2~8.0억 (보도, 거래 시점 확인 필요)",
+    region: "파주 전고점 이상 거래 4%", checks: { big: null, newish: true, lead: null, station: true },
+    note: "가장 덜 회복된 지역. GTX-A로 서울역·삼성역 접근이 좋아졌지만, 송희구는 일산처럼 너무 북쪽인 곳은 시세를 잘 따라가지 못한다고 봤습니다." }
 ];
+const CHECK_NAMES = { station: "역세권", big: "대단지", newish: "신축·준신축", lead: "지역 대장" };
 
 function renderPicks(v, r) {
   const maxC = H.maxPrice(v, P => Math.min(v.compMax * 10000, P * 100 * v.compLtv));
-  const maxB = H.maxPriceBank(v);
-  const maxAll = Math.max(maxC, maxB);
-  $("picks").innerHTML = PICKS.map((p, i) => {
-    let pill = `<span class="pill ask">확인</span>`;
-    if (p.price != null) {
-      const can = p.price <= maxAll, ded = p.price * v.pubRatio / 100 <= 6;
-      pill = can ? `<span class="pill ok">자금 가능</span>` : `<span class="pill no">자금 부족</span>`;
-      if (can) pill += ded ? ` <span class="pill part">공제 가능</span>` : ` <span class="pill ask">공제 어려움</span>`;
-    } else if (p.area === "광교") pill = `<span class="pill no">자금 부족</span>`;
+  const maxAll = Math.max(maxC, H.maxPriceBank(v));
+  const safe = H.maxPriceSafe(v, 35);
+  $("pick-budget").innerHTML = `보수적 예산 <b>${eok(safe)}</b> · 최대 대출 <b>${eok(maxAll)}</b>`;
+  const rows = PICKS.slice().sort((a, b) => (a.price ?? 99) - (b.price ?? 99)).map(p => {
+    let pill = `<span class="pill ask">가격 확인</span>`;
+    if (p.price != null) pill = p.price <= safe ? `<span class="pill ok">보수적 예산 안</span>`
+      : p.price <= maxAll ? `<span class="pill part">최대 대출이면 가능</span>` : `<span class="pill no">자금 부족</span>`;
+    const chips = Object.entries(CHECK_NAMES).map(([k, n]) => {
+      const c = p.checks[k];
+      return `<span class="chip ${c === true ? "yes" : c === false ? "no" : "q"}">${c === true ? "✓" : c === false ? "–" : "?"} ${n}</span>`;
+    }).join("");
     return `<div class="rung"><div class="what">${p.name}</div><div class="v">${p.price != null ? eok(p.price) : "–"}</div>
-      <div class="why">${p.area} · ${p.range}</div><div class="why">${p.note}</div>
+      <div class="why">${p.area}${p.meta ? " · " + p.meta : ""} · ${p.range}</div>
+      <div class="chips">${chips}<span class="chip q">? 2023년 저점 대비 반등</span><span class="chip region">${p.region}</span></div>
+      <div class="why">${p.note}</div>
       <div class="pick-meta">${pill}${p.price != null ? `<button type="button" data-price="${p.price}">이 집값으로 계산</button>` : ""}</div></div>`;
-  }).join("") + `<div class="rung"><div class="why">지금 자금으로 살 수 있는 최고가 약 ${eok(maxAll)} · 공제 판단은 공시가 비율 ${v.pubRatio}% 가정 · 최신 실거래는 국토교통부 실거래가 공개시스템에서 확인</div></div>`;
+  }).join("");
+  $("picks").innerHTML = rows + `<div class="rung"><div class="why">? 표시는 아직 확인하지 못한 항목입니다. 2023년 초 저점과 2022~2023년 거래 건수는 국토교통부 실거래가 공개시스템(rt.molit.go.kr)에서 단지명으로 확인하세요.</div></div>`;
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("button[data-price]");
@@ -809,7 +880,7 @@ function drawChart(r) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(N) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
   });
   $("chart").innerHTML = s;
 }
@@ -882,7 +953,8 @@ function renderLadder(v, r) {
     { w: "사내 대출 한도를 꽉 채우는 집값", v: pFull, why: `${eok(v.compMax)} ÷ ${v.compLtv}%. 이보다 싸면 한도가 집값의 ${v.compLtv}%로 줄어듭니다.` },
     { w: "이자 소득공제를 받을 수 있는 시세 상한", v: pDed, why: `공시가 6억 ÷ 공시가 비율 ${v.pubRatio}% (추정). 조건은 취득 당시 공시가 6억 이하입니다.` },
     { w: "사내 대출로 살 수 있는 최고가", v: pCashC, why: `자기자금 ${eok(v.own)} + 사내 대출 + 보증보험구입대출 최대 3억 − 취득세·중개비` },
-    { w: "은행 주담대로 살 수 있는 최고가", v: pCashB, why: `자기자금 ${eok(v.own)} + 은행 min(${eok(v.bankCap)}, 집값×${v.bankLtv}%) + 보증보험구입대출 − 취득세·중개비. 연봉 기준 DSR 40% 안에서 계산` }
+    { w: "은행 주담대로 살 수 있는 최고가", v: pCashB, why: `자기자금 ${eok(v.own)} + 은행 min(${eok(v.bankCap)}, 집값×${v.bankLtv}%) + 보증보험구입대출 − 취득세·중개비. 연봉 기준 DSR 40%(스트레스 금리 반영) 안에서 계산` },
+    { w: "보수적 최고가 (권장)", v: H.maxPriceSafe(v, 35), why: `사내 대출로 살 때 처음 ${Math.max(v.compGrace, 1)}년 통장에서 나가는 돈이 세후 월소득(약 ${won(H.netMonthly(v.salary))}원)의 35% 이하. 송희구 강연 기준 30%면 약 ${eok(H.maxPriceSafe(v, 30))}` }
   ];
   const mark = Math.min(v.price, scale) / scale * 100;
   $("ladder").innerHTML = rungs.map(g => `
@@ -904,7 +976,7 @@ function renderChecks(v, r, rec) {
     [r.dedOK ? "ok" : "no", r.dedOK ? "충족" : "초과", `공시가 6억 이하 (추정 ${eok(r.pub)})`, "이자 소득공제 조건. 실제 공시가는 부동산 공시가격 알리미에서 확인"],
     [r.fc.shortfall > 0 ? "no" : "ok", r.fc.shortfall > 0 ? "부족" : "충분", r.fc.shortfall > 0 ? `사내 대출 경로: 자금 ${won(r.fc.shortfall)}원 부족` : "사내 대출 경로 자금 충분", `보증보험구입대출 ${won(r.fc.smg)}원 사용`],
     [r.fb.shortfall > 0 ? "no" : "ok", r.fb.shortfall > 0 ? "부족" : "충분", r.fb.shortfall > 0 ? `은행 경로: 자금 ${won(r.fb.shortfall)}원 부족` : "은행 경로 자금 충분", `보증보험구입대출 ${won(r.fb.smg)}원 사용`],
-    [d.C <= 40 ? "ok" : "no", d.C <= 40 ? "여유" : "초과", `처음부터 은행: DSR 약 ${d.C.toFixed(1)}%`, "은행 40% 기준, 스트레스 금리 제외 단순 계산"],
+    [d.C <= 40 ? "ok" : "no", d.C <= 40 ? "여유" : "초과", `처음부터 은행: DSR 약 ${d.C.toFixed(1)}%`, `은행 40% 기준, 스트레스 금리 +${v.stress.toFixed(1)}%p 반영`],
     [d.B <= 40 ? "ok" : "no", d.B <= 40 ? "여유" : "초과", `갈아탄 뒤 DSR 약 ${d.B.toFixed(1)}%`, "같은 기준"],
     ["ask", "확인", "사내 대출의 주택 조건", "회사마다 집값 상한, 면적, 전입 기한, 근저당 순위 조건이 다릅니다."]
   ];
@@ -962,7 +1034,9 @@ function show(view, updateHash = true) {
   const changed = $("tab-" + top).getAttribute("aria-selected") !== "true";
   select(tabs, top);
   select(subs, sub);
-  $("layout").classList.toggle("solo", top === "insight" && SOLO.has(sub));
+  // 입력 폼은 계산 탭에만. 다른 탭은 "내 조건" 한 줄, 입력값을 안 쓰는 인사이트 화면은 그것도 숨김
+  $("layout").classList.toggle("with-inputs", top === "calc");
+  $("cond").hidden = top === "calc" || (top === "insight" && SOLO.has(sub));
   moveIndicator(!changed);
   const id = top === "insight" ? sub : top;
   document.title = `${TITLES[id]} · Homewise`;
@@ -988,15 +1062,16 @@ window.addEventListener("hashchange", () => show(location.hash.slice(1), false))
 if ("ResizeObserver" in window) new ResizeObserver(() => moveIndicator(true)).observe($("tabs"));
 document.fonts?.ready.then(() => moveIndicator(true));
 
-$("inputs-toggle").addEventListener("click", () => {
-  const open = $("layout").classList.toggle("inputs-open");
-  $("inputs-toggle").setAttribute("aria-expanded", String(open));
-  $("inputs-act").textContent = open ? "접기" : "수정";
+$("cond-edit").addEventListener("click", () => show("calc"));
+$("reset").addEventListener("click", () => {
+  ids.forEach(id => { const el = $(id); if (el.type === "checkbox") el.checked = defaults[id]; else el.value = defaults[id]; });
+  render();
 });
 
 $("inputs").addEventListener("input", render);
 $("inputs").addEventListener("change", render);
 $("inputs").addEventListener("submit", e => e.preventDefault());
+load();
 render();
 show(location.hash.slice(1), false);
 })();
