@@ -145,3 +145,29 @@ test("연봉 상승률: 갈아탈 때 오른 연봉으로 은행 한도를 다�
   assert.ok(H.maxPriceSafe({ ...v, raise: 5 }) > H.maxPriceSafe({ ...v, raise: 0 }), "보수적 예산이 오른다");
   assert.equal(H.simulate({ ...v, raise: 5 }).bankMax, flat.bankMax, "처음 은행 한도는 지금 연봉 기준");
 });
+
+test("결혼: 혼인신고 후 부부 소득 합산이면 갈아탈 때 한도가 늘고 보수적 예산이 오른다", () => {
+  const v = { ...base, own: 1, price: 6, bankRate: 5, stress: 3, raise: 0 };
+  const single = H.simulate(v), wed = H.simulate({ ...v, refiExtra: 5000 });
+  assert.equal(wed.refiSal, 13000);
+  assert.ok(wed.refiAmt >= single.refiAmt && wed.repay <= single.repay);
+  const both = { ...v, extraIncome: 5000 };
+  assert.equal(H.dsrIncome(both), 13000);
+  near(H.netHousehold(both), H.netMonthly(8000) + H.netMonthly(5000), 1e-9, "가구 세후 월소득");
+  assert.ok(H.maxPriceSafe(both) > H.maxPriceSafe(v));
+});
+
+test("3년 뒤 집 갈아타기: 판 돈에서 대출을 갚고 모은 돈을 더해 새 집에 넣는다", () => {
+  const v = { ...base, own: 1, price: 5, bankRate: 5, stress: 3, raise: 3, growth: 0,
+    married: true, spSalary: 5000, spOwn: 0.5, save3: 0.5, price2: 7.5 };
+  const m = H.moveUp(v), r = H.simulate(v);
+  near(m.sale, 50000, 1e-6, "집값 그대로");
+  near(m.equity, 50000 - 250 - r.C0 - r.fc.smg * 0.7, 1e-6, "남는 돈");
+  near(m.cashIn, m.equity + 5000 + 5000, 1e-6, "모은 돈 합산");
+  assert.equal(m.v2.firstHome, false);
+  near(m.v2.extraIncome, 5000 * 1.03 ** 3, 1e-6, "배우자 연봉도 상승");
+  assert.ok(m.safe > H.moveUp({ ...v, married: false }).safe, "결혼하면 예산이 커진다");
+  assert.ok(m.stayIncome > H.moveUp({ ...v, married: false }).stayIncome, "그대로 살 때도 갈아탈 때 부부 합산");
+  assert.equal(H.maxPriceSafe(v), H.maxPriceSafe({ ...v, married: false }), "지금 집 예산은 결혼과 무관");
+  assert.ok(H.moveUp({ ...v, growth: 3 }).equity > m.equity, "집값이 오르면 남는 돈이 늘어난다");
+});

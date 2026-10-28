@@ -154,6 +154,18 @@ tr.total td{font-weight:700;background:var(--sunk)}
 .ten{font-size:14px;padding:4px 8px 6px;display:grid;gap:2px}
 
 .risks{display:grid;gap:8px}
+.move{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.move>div{padding:16px 18px;display:grid;gap:6px;align-content:start;min-width:0}
+.move .stay{background:var(--bank-soft)}
+.move .go{background:var(--own-soft)}
+.move .cap{font-size:13px;color:var(--muted);font-weight:700}
+.move .big{font-family:var(--font-num);font-size:clamp(22px,3.2vw,28px);font-weight:800;line-height:1.15}
+.move .stay .big{color:var(--bank)}
+.move .go .big{color:var(--own)}
+.move dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:13px}
+.move dt{color:var(--muted)}
+.move dd{margin:0;text-align:right;font-family:var(--font-num);font-weight:700}
+@media (max-width:640px){.move{grid-template-columns:minmax(0,1fr)}}
 .callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px}
 .callout strong{color:var(--warn)}
 
@@ -339,6 +351,22 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
       </details>
 
       <div class="group">
+        <h3>3년 뒤 계획 (거치가 끝날 때)</h3>
+        <label class="check"><input type="checkbox" id="married" checked><span>그때 결혼·혼인신고 (부부 소득 합산)</span></label>
+        <div class="field"><div class="row"><label for="spSalary">배우자 연봉 (지금 기준)</label><output id="o-spSalary"></output></div>
+          <input type="range" id="spSalary" min="0" max="15000" step="100" value="5000">
+          <div class="hint">연봉 상승률을 똑같이 적용합니다. 혼인신고 후 배우자에게 다른 주택담보대출이 없으면 은행이 부부 소득을 합쳐 DSR을 봅니다.</div></div>
+        <div class="field"><div class="row"><label for="spOwn">배우자 모은 돈</label><output id="o-spOwn"></output></div>
+          <input type="range" id="spOwn" min="0" max="5" step="0.1" value="0.5"></div>
+        <div class="field"><div class="row"><label for="save3">3년 동안 내가 더 모을 돈</label><output id="o-save3"></output></div>
+          <input type="range" id="save3" min="0" max="3" step="0.1" value="0.5">
+          <div class="hint" id="h-save3"></div></div>
+        <div class="field"><div class="row"><label for="price2">갈아탈 집값 (84㎡ 등)</label><output id="o-price2"></output></div>
+          <input type="range" id="price2" min="3" max="15" step="0.1" value="7.5">
+          <div class="hint" id="h-price2"></div></div>
+      </div>
+
+      <div class="group">
         <h3>비교 기준</h3>
         <div class="field"><div class="row"><label for="m2Rate">통화량(M2) 증가율 (연)</label><output id="o-m2Rate"></output></div>
           <input type="range" id="m2Rate" min="0" max="10" step="0.1" value="5.6">
@@ -394,6 +422,15 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
           <div class="ten" id="wait-note"></div>
         </section>
 
+        <section class="block" aria-labelledby="t-move">
+          <div class="block-head"><h2 id="t-move">3년 뒤, 그대로 살까 갈아탈까</h2><span class="muted small" id="move-sub"></span></div>
+          <div class="move">
+            <div class="stay"><div class="cap">그대로 살며 은행으로 갈아타기</div><div class="big" id="m-stay"></div><div id="m-stay-d"></div></div>
+            <div class="go"><div class="cap" id="m-go-h"></div><div class="big" id="m-go"></div><div id="m-go-d"></div></div>
+          </div>
+          <div class="ten" id="move-note"></div>
+        </section>
+
         <section class="block" aria-labelledby="t-risk">
           <h2 id="t-risk">꼭 알고 결정할 것</h2>
           <div class="risks" id="risks"></div>
@@ -427,6 +464,12 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
           <div class="checks" id="checks"></div>
         </section>
 
+        <section class="block" aria-labelledby="t-wed">
+          <div class="block-head"><h2 id="t-wed">결혼하면 달라지는 것</h2><span class="muted small" id="wed-sub"></span></div>
+          <div class="checks" id="wed"></div>
+          <p class="muted small">정책대출 조건은 2026년 안내 글 기준이며 바뀔 수 있습니다. 주택도시기금(HUG)·주택금융공사·은행에서 꼭 확인하세요.</p>
+        </section>
+
         <section class="notes" aria-labelledby="t-notes">
           <h3 id="t-notes">계산 가정</h3>
           <ul>
@@ -437,6 +480,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>취득세: 6억 이하 1%, 6~9억 누진, 9억 초과 3% + 지방교육세(85㎡ 이하 기준). 중개수수료 0.4~0.7% + 등기비 약 150만(추정).</li>
             <li>재산세는 공시가의 약 0.13%/년(1주택 특례 추정). 매도 비용·양도세, 원금 상환분의 기회비용, 월세 인상은 넣지 않았습니다.</li>
             <li>추천은 자금이 모자라지 않고 DSR 40% 이하인 경로 중 10년 누적 비용이 가장 적은 것입니다. 사내 대출 그대로 갚기는 거치 후 원리금을 같은 40% 기준으로 봅니다.</li>
+            <li>3년 뒤 계획: 지금 집 예산은 혼자 소득으로 보수적으로 계산하고, 결혼(부부 소득 합산)과 집 갈아타기는 비교 탭 "3년 뒤, 그대로 살까 갈아탈까"에만 반영합니다. 갈아탈 땐 판 돈 − 매도 비용 0.5% − 사내 대출 원금 − 보증보험구입대출 남은 원금에 모은 돈을 더하고, 사내 대출을 다시 받는다고 봅니다. 1주택 비과세(2년 보유·거주, 12억 이하)로 양도세 0.</li>
             <li>거치가 끝난 뒤(갈아탈 때·사내 대출 그대로 갚을 때)의 DSR은 연봉 상승률만큼 오른 그때 연봉으로 계산합니다. 처음 은행 한도와 세금은 지금 연봉 기준입니다.</li>
             <li>세후 월소득 = (연봉 − 4대보험 − 소득세) ÷ 12. 조건 체크의 "세후 월소득 30%"는 송희구 강연 기준입니다.</li>
           </ul>
@@ -455,6 +499,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>카카오뱅크 중도상환해약금 면제 연장: <a href="https://biz.sbs.co.kr/amp/article/20000239059" target="_blank" rel="noopener">SBS Biz</a></li>
             <li>통화량: <a href="https://biz.sbs.co.kr/amp/article/20000340139" target="_blank" rel="noopener">SBS Biz, 8월 시중 통화량 4267조원</a> (한국은행 2026-10-15 발표)</li>
             <li>금리: <a href="https://www.fnnews.com/news/202610270605559385" target="_blank" rel="noopener">파이낸셜뉴스 2026-10-27, 5대 은행 5년 고정 4.61~6.65%</a> · <a href="https://www.fntimes.com/html/view.php?ud=202610221201381124179ad43907_18" target="_blank" rel="noopener">한국금융신문, 기준금리 3.00% 동결</a></li>
+            <li>결혼·갈아타기: <a href="https://news.bizwatch.co.kr/article/finance/2026/01/23/0044" target="_blank" rel="noopener">비즈워치, 부부 소득 합산 DSR</a> · <a href="https://manual.beneinfos.com/2026/08/2026_01224397302.html" target="_blank" rel="noopener">2026 신혼부부 디딤돌</a> · <a href="https://kbthink.com/loan-guide/newborn-special.html" target="_blank" rel="noopener">KB Think, 신생아 특례대출</a> · <a href="https://wikidocs.net/blog/@Insight_Lab/20860/" target="_blank" rel="noopener">1세대 1주택 비과세 요건</a></li>
             <li>LTV·스트레스 DSR: <a href="https://v.daum.net/v/20251017204647239" target="_blank" rel="noopener">생애최초 LTV 70% 유지</a> · <a href="https://biz.heraldcorp.com/article/10593711" target="_blank" rel="noopener">헤럴드경제, 수원 영통 LTV 40%</a> · <a href="https://www.banksalad.com/articles/%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4-DSR-%EA%B7%9C%EC%A0%9C-%EC%A0%84%EC%84%B8%EB%8C%80%EC%B6%9C-%EB%8B%A8%EA%B3%84" target="_blank" rel="noopener">스트레스 DSR 3단계 정리</a> · <a href="https://kbthink.com/main/real-estate/basic-information/first-time-real-estate/2025/first-time-real-estate-250327.html" target="_blank" rel="noopener">주기형 30%·혼합형 60%</a></li>
             <li>신입 초봉: <a href="https://jasoseol.com/companies/141" target="_blank" rel="noopener">자소설닷컴</a> · <a href="https://community.linkareer.com/employment_data/5554745" target="_blank" rel="noopener">링커리어, 2026 대기업 초봉</a> (고정급 약 5,200만~5,500만, 성과급 포함 총소득은 더 높음)</li>
             <li>실거래: <a href="https://m.richgo.ai/realty/danji/a4ETpyK" target="_blank" rel="noopener">백현모아미래도1단지</a> · <a href="https://ndsts.com/apt_rent/aptlist_dong?region_code=41463&amp;dong=%EB%8F%99%EB%B0%B1%EB%8F%99" target="_blank" rel="noopener">동백동 실거래</a> · <a href="https://zippoom.com/%EB%B6%80%EB%8F%99%EC%82%B0/%EA%B2%BD%EA%B8%B0-%EC%88%98%EC%9B%90%EC%8B%9C-%EC%9E%A5%EC%95%88%EA%B5%AC-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%8B%A0%EC%9D%BC%EC%95%84%ED%8C%8C%ED%8A%B8/b2c6ar" target="_blank" rel="noopener">율전동 신일</a> · <a href="https://m.news.nate.com/view/20260716n27429" target="_blank" rel="noopener">망포늘푸른벽산</a> · <a href="https://m.news.nate.com/view/20260801n09088" target="_blank" rel="noopener">영통황골주공1차</a> · <a href="https://seonsu.ai/complex/38470-%EA%B6%8C%EC%84%A0%EB%8F%99-%EC%88%98%EC%9B%90%EC%95%84%EC%9D%B4%ED%8C%8C%ED%81%AC%EC%8B%9C%ED%8B%B07%EB%8B%A8%EC%A7%80" target="_blank" rel="noopener">수원아이파크시티7단지</a> · <a href="https://seonsu.ai/complex/38487-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%84%B1%EA%B7%A0%EA%B4%80%EB%8C%80%EC%97%AD%EB%8F%99%EB%AC%B8%EB%94%94%EC%9D%B4%EC%8A%A4%ED%8A%B8" target="_blank" rel="noopener">성균관대역동문디이스트</a> · <a href="https://apt2.me/apt/AptMonth.jsp?area=4146" target="_blank" rel="noopener">용인 최고가 대비</a></li>
@@ -645,8 +690,8 @@ const H = window.Homewise;
 const { won, eok, pct, avg, N } = H;
 const $ = id => document.getElementById(id);
 const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
-  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress","raise"];
-const STORE = "homewise-inputs-v5"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
+  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress","raise","married","spSalary","spOwn","save3","price2"];
+const STORE = "homewise-inputs-v6"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
 const defaults = {};
 ids.forEach(id => { const el = $(id); defaults[id] = el.type === "checkbox" ? el.checked : el.value; });
 
@@ -679,6 +724,7 @@ function showInputs(v) {
   set("m2Rate", pct(v.m2Rate, 1)); set("compRate", pct(v.compRate, 1)); set("compLegal", pct(v.compLegal, 1)); set("compMax", eok(v.compMax));
   set("compLtv", v.compLtv + "%"); set("compGrace", v.compGrace + "년"); set("compYears", v.compYears + "년");
   set("stress", "+" + v.stress.toFixed(1) + "%p"); set("raise", pct(v.raise, 1));
+  set("spSalary", won(v.spSalary) + "원"); set("spOwn", eok(v.spOwn)); set("save3", eok(v.save3)); set("price2", eok(v.price2));
 }
 
 function render() {
@@ -731,6 +777,7 @@ function render() {
   drawChart(r);
   renderTen(v, r);
   renderWait(v, r, rec);
+  renderMove(v, r);
   renderRisks(v, r, rec);
   renderFacts(v, r, base);
   renderLadder(v, r);
@@ -948,6 +995,51 @@ function renderTen(v, r) {
     return `<div>${n}: <strong style="color:${net >= 0 ? "var(--own)" : "var(--rent)"}">${net >= 0 ? "+" : ""}${won(net)}원</strong> <span class="muted small">(${be === 0 ? "집값 그대로여도 이득" : `본전 집값 상승률 연 ${pct(be, 1)}`})</span></div>`;
   });
   $("ten").innerHTML = `<div class="muted small">10년 뒤 월세 대비 (집값 연 ${v.growth}% 가정)</div>` + lines.join("");
+}
+
+function renderMove(v, r) {
+  const m = H.moveUp(v);
+  const dl = rows => `<dl>${rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl>`;
+  const who = v.married ? "부부" : "나";
+  $("move-sub").textContent = `${m.Y}년 뒤 · ${v.married ? "결혼 · 부부 소득 합산" : "혼자"} · 연봉 연 ${pct(v.raise, 1)} 상승 · 지금 집 연 ${v.growth}% 상승 가정`;
+  const bankPay = m.stayRefi * H.dsrFactor({ ...v, stress: 0 }) / 12;
+  $("m-stay").textContent = m.stayRepay > 0 ? `직접 갚을 돈 ${won(m.stayRepay)}원` : "전액 은행으로 갈아타기 가능";
+  $("m-stay-d").innerHTML = dl([
+    ["그때 은행 한도 계산 소득", `${won(m.stayIncome)}원`],
+    ["은행으로 옮기는 돈", `${won(m.stayRefi)}원`],
+    ["그 뒤 은행 원리금 (월)", `${won(bankPay)}원`],
+    ["사는 집", `${eok(v.price)} 그대로`]
+  ]);
+  $("m-go-h").textContent = `팔고 ${eok(v.price2)} 집으로 갈아타기 (사내 대출 다시 받아 거치 ${v.compGrace}년)`;
+  const ok = m.shortfall === 0 && v.price2 <= m.safe;
+  $("m-go").textContent = m.shortfall > 0 ? `자금 ${won(m.shortfall)}원 부족` : `처음 ${m.Y}년 매달 ${won(m.monthly)}원`;
+  $("m-go-d").innerHTML = dl([
+    ["판 돈 − 매도비용 − 대출 상환", `${won(m.equity)}원`],
+    [`+ 모은 돈${v.married ? " (나 + 배우자)" : ""}`, `${won(v.save3 * 10000 + m.spOwn)}원`],
+    ["새 집에 넣을 돈", `${won(m.cashIn)}원`],
+    [`${who} 세후 월소득 대비 (갈아탈 때 갚을 돈 모으기 포함)`, `${m.share.toFixed(0)}%`],
+    ["보수적 최고가 / 최대", `${eok(m.safe)} / ${eok(m.max)}`]
+  ]) + `<div><span class="pill ${ok ? "ok" : m.shortfall > 0 ? "no" : "ask"}">${ok ? "보수적 예산 안" : m.shortfall > 0 ? "자금 부족" : "보수적 예산 초과"}</span></div>`;
+  $("move-note").innerHTML = `<div>갈아타면 사내 대출 거치를 한 번 더 써서 은행으로 넘어가며 큰돈을 갚는 시점을 미룰 수 있습니다. 송희구 강연 기준으로 갈아탈 땐 최소 1.5배(지금 집이면 ${eok(v.price * 1.5)})로 가야 거래 비용(약 1억)을 넘는 의미가 있습니다.</div>
+    <div class="muted small">가정: 사내 대출을 다시 받을 수 있어야 합니다(회사 규정 확인). 1주택 2년 보유·거주, 12억 이하면 양도세 비과세라 0으로 봤고, 매도 비용 0.5%, 보증보험구입대출은 남은 원금을 갚고 새로 받는다고 봤습니다. 새 집은 생애최초가 아니라 취득세 감면이 없습니다.</div>`;
+  $("h-price2").textContent = `지금 집의 1.5배 = ${eok(v.price * 1.5)} (송희구 최소 기준) · ${m.Y}년 뒤 보수적 최고가 약 ${eok(m.safe)}`;
+  $("h-save3").textContent = `월 약 ${won(v.save3 * 10000 / (m.Y * 12))}원씩 모으는 셈입니다.`;
+  renderWed(v, m);
+}
+
+function renderWed(v, m) {
+  const g = Math.pow(1 + v.raise / 100, m.Y);
+  const inc = (v.salary + (v.married ? v.spSalary : 0)) * g, P = v.price2;
+  $("wed-sub").textContent = v.married ? `${m.Y}년 뒤 부부합산 연소득 약 ${won(inc)}원 · 갈아탈 집 ${eok(P)} 기준` : "3년 뒤 계획에서 결혼을 켜면 부부 기준으로 판단합니다";
+  const yes = (c, a, b) => c ? ["ok", a] : ["no", b];
+  const items = [
+    [...(v.married ? ["ok", "3년 뒤 반영"] : ["ask", "결혼 시"]), "은행 DSR 부부 소득 합산", "혼인신고 후 배우자에게 다른 주택담보대출이 없으면 부부 소득을 합쳐 한도를 계산합니다. 비교 탭의 \"3년 뒤\" 계산에만 반영하고, 지금 집 예산은 혼자 소득으로 보수적으로 봅니다."],
+    [...yes(v.married && inc <= 8500 && P <= 6, "해당", "해당 없음"), "신혼부부 디딤돌대출 (주택도시기금)", `부부합산 8,500만 이하 · 주택 6억 이하(85㎡ 이하) · 혼인 7년 이내. 지금 계산으로는 소득 ${won(inc)}원 · 집값 ${eok(P)}`],
+    [...(v.married && inc <= 20000 && P <= 9 ? ["part", "출산 시"] : ["no", "해당 없음"]), "신생아 특례 디딤돌대출", "출산 2년 안 · 부부합산 1.3억(맞벌이 2억) 이하 · 주택 9억 이하. 금리 연 1%대 후반부터, 한도는 확인 필요"],
+    ["ask", "확인", "신혼부부 특별공급 (청약)", "혼인 7년 이내. 소득·자산 기준과 무주택 요건이 있어, 지금 집을 사면 무주택 요건이 깨지는지 먼저 확인합니다."],
+    ["no", "주의", "생애최초 혜택은 한 번뿐", "지금 집에서 생애최초(취득세 감면·LTV 70%)를 쓰면 다음 집과 배우자 쪽에서는 다시 받기 어렵습니다. 새 집은 감면 없이 계산했습니다."]
+  ];
+  $("wed").innerHTML = items.map(([c, t, p, d]) => `<div class="chk"><span class="pill ${c}">${t}</span><p>${p}</p><span class="d">${d}</span></div>`).join("");
 }
 
 function renderWait(v, r, rec) {
