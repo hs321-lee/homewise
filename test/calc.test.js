@@ -113,12 +113,14 @@ test("스트레스 금리는 실제 상환액에는 쓰지 않는다", () => {
   near(a.C.m[0].bInt, b.C.m[0].bInt, 1e-9, "같은 대출이면 같은 이자");
 });
 
-test("보수적 최고가: 처음 몇 년 나가는 돈이 세후 월소득 35% 이하", () => {
-  const v = { ...base, own: 1, bankRate: 5, stress: 3, depRate: 3 };
-  const P = H.maxPriceSafe(v, 35);
+test("보수적 최고가: 매달 나가는 돈 + 갈아탈 때 갚을 돈 모으기가 세후 월소득 50% 이하", () => {
+  const v = { ...base, salary: 5300, own: 1, bankRate: 5, stress: 3, depRate: 3 };
+  const P = H.maxPriceSafe(v, 50);
   const r = H.simulate({ ...v, price: P });
-  const cash = H.avg(r.B.m, 0, Math.max(r.G, 12), o => o.cash);
-  assert.ok(cash <= H.netMonthly(v.salary) * 0.35 + 0.01, String(cash));
-  assert.ok(P < H.maxPrice(v, Q => Math.min(v.compMax * 10000, Q * 100 * v.compLtv)), "최대치보다 낮다");
-  assert.ok(H.maxPriceSafe(v, 30) < P, "30%면 더 낮다");
+  const span = Math.max(r.G, 12);
+  const need = H.avg(r.B.m, 0, span, o => o.cash) + r.repay / span;
+  assert.ok(need <= H.netMonthly(v.salary) * 0.5 + 0.01, String(need));
+  assert.ok(P > 3.5 && P < 4.5, String(P)); // 신입 5,300만 · 1억이면 약 4억
+  assert.ok(H.maxPriceSafe(v, 40) < P, "기준이 낮으면 더 낮다");
+  assert.ok(H.maxPriceSafe({ ...v, salary: 8000 }, 50) > P, "연봉이 높으면 더 높다");
 });
