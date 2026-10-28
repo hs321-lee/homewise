@@ -134,3 +134,14 @@ test("지금 살까, 기다릴까: 집값이 그대로면 월세 + 취득비용 
   assert.ok(up.cost > w.cost, "집값이 오르면 기다린 비용이 더 크다");
   near(up.up, 80000 * (1.056 ** 2 - 1), 1e-6, "오른 집값");
 });
+
+test("연봉 상승률: 갈아탈 때 오른 연봉으로 은행 한도를 다시 계산", () => {
+  const v = { ...base, own: 1, price: 6, bankRate: 5, stress: 3 };
+  const flat = H.simulate({ ...v, raise: 0 }), up = H.simulate({ ...v, raise: 5 });
+  near(up.refiSal, 8000 * 1.05 ** 3, 1e-6, "3년 뒤 연봉");
+  assert.equal(flat.refiSal, 8000);
+  assert.ok(up.refiAmt > flat.refiAmt && up.repay < flat.repay, "한도가 늘고 직접 갚을 돈이 준다");
+  assert.ok(H.dsr({ ...v, raise: 5 }, up).B <= 40.01, "그때 연봉 기준 DSR 40% 이하");
+  assert.ok(H.maxPriceSafe({ ...v, raise: 5 }) > H.maxPriceSafe({ ...v, raise: 0 }), "보수적 예산이 오른다");
+  assert.equal(H.simulate({ ...v, raise: 5 }).bankMax, flat.bankMax, "처음 은행 한도는 지금 연봉 기준");
+});

@@ -97,7 +97,9 @@
     /* DSR: (은행 원리금 + 보증보험구입대출 원리금) / 연봉 ≤ 40% */
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
     const bankFactor = dsrFactor(v);
-    const dsrCap = smg => Math.max(0, (v.salary * DSR_MAX / 100 - smgYear(smg)) / bankFactor);
+    const dsrCap = (smg, sal = v.salary) => Math.max(0, (sal * DSR_MAX / 100 - smgYear(smg)) / bankFactor);
+    /* 거치가 끝나 갈아탈 때의 연봉: 연봉 상승률(raise, %/년)만큼 거치 기간 동안 오른다고 봅니다 */
+    const refiSal = v.salary * Math.pow(1 + (v.raise || 0) / 100, v.compGrace);
     const support = Math.max(0, v.compLegal - v.compRate); // 소득으로 잡히는 회사 지원 금리
     const G = Math.round(v.compGrace * 12), compN = Math.round(v.compYears * 12);
     const fc = funding(P, costs, C0, v.own);
@@ -107,7 +109,7 @@
     const smgRoom = Math.max(0, (v.salary * DSR_MAX / 100 - bankMax * bankFactor) / smgFactor);
     const fb = funding(P, costs, bankMax, v.own, Math.min(SMG_MAX, smgRoom));
     const dsrBound = bankMax < bankLimit - 1 || smgRoom < SMG_MAX;
-    const refiAmt = Math.min(C0, bankLimit, dsrCap(fc.smg)), repay = C0 - refiAmt;
+    const refiAmt = Math.min(C0, bankLimit, dsrCap(fc.smg, refiSal)), repay = C0 - refiAmt;
     const propTax = pub * 10000 * .0013;
     const dr = v.oppOn ? v.depRate / 100 : 0;
     const compPay = annuity(C0, v.compRate, compN);
@@ -163,7 +165,7 @@
     const A = run("A"), B = run("B"), C = run("C");
     const rentM = v.rentMonthly + v.rentDeposit * 10000 * dr / 12;
     const rentCum = Array.from({ length: N + 1 }, (_, i) => rentM * i);
-    return { P, pub, dedOK, limit, costs, C0, G, support, compPay, fc, fb, bankLimit, bankMax, dsrBound, refiAmt, repay, propTax, A, B, C, rentM, rentCum };
+    return { P, pub, dedOK, limit, costs, C0, G, support, compPay, fc, fb, bankLimit, bankMax, dsrBound, refiSal, refiAmt, repay, propTax, A, B, C, rentM, rentCum };
   }
 
   const avg = (arr, from, to, f) => { let s = 0; for (let i = from; i < to; i++) s += f(arr[i]); return s / (to - from); };
@@ -228,8 +230,8 @@
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
     const bankYear = amt => amt * dsrFactor(v);
     return {
-      A: (r.compPay * 12 + smgYear(r.fc.smg)) / v.salary * 100,
-      B: (bankYear(r.refiAmt) + smgYear(r.fc.smg)) / v.salary * 100,
+      A: (r.compPay * 12 + smgYear(r.fc.smg)) / r.refiSal * 100, // 거치 후 원리금은 그때 연봉 기준
+      B: (bankYear(r.refiAmt) + smgYear(r.fc.smg)) / r.refiSal * 100,
       C: (bankYear(r.bankMax) + smgYear(r.fb.smg)) / v.salary * 100
     };
   }

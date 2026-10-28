@@ -270,6 +270,9 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
         <div class="field"><div class="row"><label for="salary">총연봉</label><output id="o-salary"></output></div>
           <input type="range" id="salary" min="3000" max="20000" step="100" value="8000">
           <div class="hint" id="h-base"></div></div>
+        <div class="field"><div class="row"><label for="raise">연봉 상승률 (연)</label><output id="o-raise"></output></div>
+          <input type="range" id="raise" min="0" max="10" step="0.5" value="3">
+          <div class="hint" id="h-raise"></div></div>
         <div class="field"><div class="row"><label for="own">모은 돈 (자기자금)</label><output id="o-own"></output></div>
           <input type="range" id="own" min="0" max="10" step="0.1" value="1">
           <div class="hint">모자라는 돈은 보증보험구입대출(최대 3억)로 자동으로 채웁니다.</div></div>
@@ -434,6 +437,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>취득세: 6억 이하 1%, 6~9억 누진, 9억 초과 3% + 지방교육세(85㎡ 이하 기준). 중개수수료 0.4~0.7% + 등기비 약 150만(추정).</li>
             <li>재산세는 공시가의 약 0.13%/년(1주택 특례 추정). 매도 비용·양도세, 원금 상환분의 기회비용, 월세 인상은 넣지 않았습니다.</li>
             <li>추천은 자금이 모자라지 않고 DSR 40% 이하인 경로 중 10년 누적 비용이 가장 적은 것입니다. 사내 대출 그대로 갚기는 거치 후 원리금을 같은 40% 기준으로 봅니다.</li>
+            <li>거치가 끝난 뒤(갈아탈 때·사내 대출 그대로 갚을 때)의 DSR은 연봉 상승률만큼 오른 그때 연봉으로 계산합니다. 처음 은행 한도와 세금은 지금 연봉 기준입니다.</li>
             <li>세후 월소득 = (연봉 − 4대보험 − 소득세) ÷ 12. 조건 체크의 "세후 월소득 30%"는 송희구 강연 기준입니다.</li>
           </ul>
           <h3>확인이 필요한 것</h3>
@@ -641,8 +645,8 @@ const H = window.Homewise;
 const { won, eok, pct, avg, N } = H;
 const $ = id => document.getElementById(id);
 const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
-  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress"];
-const STORE = "homewise-inputs-v4"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
+  "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress","raise"];
+const STORE = "homewise-inputs-v5"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
 const defaults = {};
 ids.forEach(id => { const el = $(id); defaults[id] = el.type === "checkbox" ? el.checked : el.value; });
 
@@ -674,7 +678,7 @@ function showInputs(v) {
   set("growth", (v.growth > 0 ? "+" : "") + v.growth.toFixed(1) + "%");
   set("m2Rate", pct(v.m2Rate, 1)); set("compRate", pct(v.compRate, 1)); set("compLegal", pct(v.compLegal, 1)); set("compMax", eok(v.compMax));
   set("compLtv", v.compLtv + "%"); set("compGrace", v.compGrace + "년"); set("compYears", v.compYears + "년");
-  set("stress", "+" + v.stress.toFixed(1) + "%p");
+  set("stress", "+" + v.stress.toFixed(1) + "%p"); set("raise", pct(v.raise, 1));
 }
 
 function render() {
@@ -692,6 +696,7 @@ function render() {
   const span = Math.max(G, 12); // 거치 0년이면 1년차로 비교
   $("h-pub").textContent = "추정 공시가 " + eok(r.pub) + (r.dedOK ? " · 6억 이하 (공제 가능)" : " · 6억 초과 (공제 불가)");
   $("h-base").textContent = `추정 과세표준 약 ${won(base)}원`;
+  $("h-raise").textContent = `갈아탈 때(${v.compGrace}년 뒤) 연봉 약 ${won(r.refiSal)}원으로 은행 한도를 계산합니다. 세금·월소득 계산은 지금 연봉 그대로. 보수적으로 3%를 기본으로 둡니다.`;
 
   renderRec(v, r, rec);
   renderMoney(v, r, rec);
@@ -959,7 +964,7 @@ function renderWait(v, r, rec) {
 
 function renderRisks(v, r, rec) {
   const items = [];
-  items.push(`<strong>사내 대출은 거치가 끝나면 부담이 커집니다.</strong> 그대로 갚으면 ${v.compGrace + 1}년차부터 매달 <strong>${won(r.compPay)}원</strong>을 ${v.compYears}년간 냅니다(연봉 대비 ${rec.dsr.A.toFixed(0)}%).`);
+  items.push(`<strong>사내 대출은 거치가 끝나면 부담이 커집니다.</strong> 그대로 갚으면 ${v.compGrace + 1}년차부터 매달 <strong>${won(r.compPay)}원</strong>을 ${v.compYears}년간 냅니다(그때 연봉 ${won(r.refiSal)} 대비 ${rec.dsr.A.toFixed(0)}%).`);
   items.push(r.repay > 0
     ? `<strong>갈아탈 때 은행이 ${won(r.refiAmt)}원까지만 빌려줍니다.</strong> 나머지 ${won(r.repay)}원은 직접 갚아야 하니 거치 기간 동안 매달 ${won(r.repay / Math.max(r.G, 1))}원씩 모아야 합니다.`
     : `<strong>갈아타기는 지금 규제 기준으로 가능합니다.</strong> 사내 대출 ${won(r.C0)}원 전부를 은행으로 옮길 수 있습니다. 다만 그때 규제와 금리는 알 수 없습니다.`);
@@ -1016,7 +1021,7 @@ function renderLadder(v, r) {
     { w: "이자 소득공제를 받을 수 있는 시세 상한", v: pDed, why: `공시가 6억 ÷ 공시가 비율 ${v.pubRatio}% (추정). 조건은 취득 당시 공시가 6억 이하입니다.` },
     { w: "사내 대출로 살 수 있는 최고가", v: pCashC, why: `자기자금 ${eok(v.own)} + 사내 대출 + 보증보험구입대출 최대 3억 − 취득세·중개비` },
     { w: "은행 주담대로 살 수 있는 최고가", v: pCashB, why: `자기자금 ${eok(v.own)} + 은행 min(${eok(v.bankCap)}, 집값×${v.bankLtv}%) + 보증보험구입대출 − 취득세·중개비. 연봉 기준 DSR 40%(스트레스 금리 반영) 안에서 계산` },
-    { w: "보수적 최고가 (권장)", v: H.maxPriceSafe(v), why: `사내 대출로 살 때 처음 ${Math.max(v.compGrace, 1)}년 매달 나가는 돈 + 거치가 끝나 갈아탈 때 직접 갚을 돈을 그동안 나눠 모으는 돈이 세후 월소득(약 ${won(H.netMonthly(v.salary))}원)의 50% 이하` }
+    { w: "보수적 최고가 (권장)", v: H.maxPriceSafe(v), why: `사내 대출로 살 때 처음 ${Math.max(v.compGrace, 1)}년 매달 나가는 돈 + 거치가 끝나 갈아탈 때 직접 갚을 돈을 그동안 나눠 모으는 돈이 세후 월소득(약 ${won(H.netMonthly(v.salary))}원)의 50% 이하. 갈아탈 때 은행 한도는 연봉이 연 ${pct(v.raise, 1)}씩 오른다고 보고 계산` }
   ];
   const mark = Math.min(v.price, scale) / scale * 100;
   $("ladder").innerHTML = rungs.map(g => `
@@ -1039,7 +1044,7 @@ function renderChecks(v, r, rec) {
     [r.fc.shortfall > 0 ? "no" : "ok", r.fc.shortfall > 0 ? "부족" : "충분", r.fc.shortfall > 0 ? `사내 대출 경로: 자금 ${won(r.fc.shortfall)}원 부족` : "사내 대출 경로 자금 충분", `보증보험구입대출 ${won(r.fc.smg)}원 사용`],
     [r.fb.shortfall > 0 ? "no" : "ok", r.fb.shortfall > 0 ? "부족" : "충분", r.fb.shortfall > 0 ? `은행 경로: 자금 ${won(r.fb.shortfall)}원 부족` : "은행 경로 자금 충분", `보증보험구입대출 ${won(r.fb.smg)}원 사용`],
     [d.C <= 40 ? "ok" : "no", d.C <= 40 ? "여유" : "초과", `처음부터 은행: DSR 약 ${d.C.toFixed(1)}%`, `은행 40% 기준, 스트레스 금리 +${v.stress.toFixed(1)}%p 반영`],
-    [d.B <= 40 ? "ok" : "no", d.B <= 40 ? "여유" : "초과", `갈아탄 뒤 DSR 약 ${d.B.toFixed(1)}%`, "같은 기준"],
+    [d.B <= 40 ? "ok" : "no", d.B <= 40 ? "여유" : "초과", `갈아탄 뒤 DSR 약 ${d.B.toFixed(1)}%`, `그때 연봉 약 ${won(r.refiSal)}(연 ${pct(v.raise, 1)} 상승) 기준`],
     ["ask", "확인", "사내 대출의 주택 조건", "회사마다 집값 상한, 면적, 전입 기한, 근저당 순위 조건이 다릅니다."]
   ];
   $("checks").innerHTML = items.map(([c, t, p, dd]) => `<div class="chk"><span class="pill ${c}">${t}</span><p>${p}</p><span class="d">${dd}</span></div>`).join("");
