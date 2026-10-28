@@ -88,6 +88,9 @@
     return v.bankType === "jugiEq" ? 1 / 30 + r / 100 : annuity(1, r, 360) * 12;
   }
 
+  /* 은행 DSR에 쓰는 연소득(만원): 내 연봉 + 부부 합산하는 배우자 연봉 */
+  const dsrIncome = v => v.salary + (v.extraIncome || 0);
+
   function simulate(v) {
     const P = v.price, pub = P * v.pubRatio / 100, dedOK = pub <= 6;
     const limit = LIMIT[v.bankType], eqPrin = v.bankType === "jugiEq";
@@ -97,16 +100,18 @@
     /* DSR: (은행 원리금 + 보증보험구입대출 원리금) / 연봉 ≤ 40% */
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
     const bankFactor = dsrFactor(v);
-    const dsrCap = (smg, sal = v.salary) => Math.max(0, (sal * DSR_MAX / 100 - smgYear(smg)) / bankFactor);
-    /* 거치가 끝나 갈아탈 때의 연봉: 연봉 상승률(raise, %/년)만큼 거치 기간 동안 오른다고 봅니다 */
-    const refiSal = v.salary * Math.pow(1 + (v.raise || 0) / 100, v.compGrace);
+    /* DSR 소득: 내 연봉 + 처음부터 합산하는 배우자 연봉(extraIncome, 혼인신고 후 부부 합산) */
+    const inc = dsrIncome(v);
+    const dsrCap = (smg, sal = inc) => Math.max(0, (sal * DSR_MAX / 100 - smgYear(smg)) / bankFactor);
+    /* 거치가 끝나 갈아탈 때의 소득: 연봉 상승률(raise, %/년)만큼 오르고, 그때 결혼하면 배우자 연봉(refiExtra)을 더합니다 */
+    const refiSal = (inc + (v.refiExtra || 0)) * Math.pow(1 + (v.raise || 0) / 100, v.compGrace);
     const support = Math.max(0, v.compLegal - v.compRate); // 소득으로 잡히는 회사 지원 금리
     const G = Math.round(v.compGrace * 12), compN = Math.round(v.compYears * 12);
     const fc = funding(P, costs, C0, v.own);
     /* 보증보험구입대출(10년 상환)이 DSR을 더 많이 차지하므로 은행 대출을 먼저 채우고, 남은 DSR 안에서 보증보험구입대출을 씁니다 */
     const bankMax = Math.min(bankLimit, dsrCap(0));
     const smgFactor = 1 / 10 + v.smgRate / 100 * .95;
-    const smgRoom = Math.max(0, (v.salary * DSR_MAX / 100 - bankMax * bankFactor) / smgFactor);
+    const smgRoom = Math.max(0, (inc * DSR_MAX / 100 - bankMax * bankFactor) / smgFactor);
     const fb = funding(P, costs, bankMax, v.own, Math.min(SMG_MAX, smgRoom));
     const dsrBound = bankMax < bankLimit - 1 || smgRoom < SMG_MAX;
     const refiAmt = Math.min(C0, bankLimit, dsrCap(fc.smg, refiSal)), repay = C0 - refiAmt;
@@ -184,7 +189,7 @@
   /* 은행 경로 최고가: LTV·한도·DSR 40%를 모두 지키면서 살 수 있는 가격, 억 */
   function maxPriceBank(v) {
     const bf = dsrFactor(v);
-    const sf = 1 / 10 + v.smgRate / 100 * .95, cap = v.salary * DSR_MAX / 100;
+    const sf = 1 / 10 + v.smgRate / 100 * .95, cap = dsrIncome(v) * DSR_MAX / 100;
     let lo = 1, hi = 25;
     for (let k = 0; k < 40; k++) {
       const P = (lo + hi) / 2;
@@ -197,12 +202,14 @@
 
   /* 세후 월소득(만원): 연봉 − 4대보험 − 소득세(지방세 포함), 12로 나눔 */
   const netMonthly = sal => (sal - insurance(sal) - tax(sal, 0, 0)) / 12;
+  /* 가구 세후 월소득: 나 + 처음부터 합산하는 배우자 */
+  const netHousehold = v => netMonthly(v.salary) + (v.extraIncome ? netMonthly(v.extraIncome) : 0);
 
   /* 보수적 최고가(억): 사내 대출 경로로 살 때 처음 몇 년(거치 기간, 없으면 1년) 매달 통장에서 나가는 돈과
      거치가 끝나 은행으로 갈아탈 때 직접 갚아야 할 돈을 그 기간에 나눠 모으는 돈의 합이 세후 월소득의 share% 이하이고,
      자금이 모자라지 않는 가장 비싼 집값 */
   function maxPriceSafe(v, share = 50) {
-    const cap = netMonthly(v.salary) * share / 100;
+    const cap = netHousehold(v) * share / 100;
     const ok = P => {
       const r = simulate({ ...v, price: P });
       const span = Math.max(r.G, 12);
@@ -225,6 +232,29 @@
     return { rent, up, costs, buy: sim.cumArr[k], cost: rent + up + costs - sim.cumArr[k], later };
   }
 
+  /* 3년 뒤(거치가 끝날 때) 집 갈아타기: 지금 집을 팔고 새 집(price2)을 사면서 사내 대출을 다시 받아 거치를 한 번 더 씁니다.
+     그때 결혼(married)하면 배우자 연봉(spSalary)·모은 돈(spOwn)을 합칩니다.
+     - 지금 집 시세는 집값 상승률(growth)만큼, 연봉은 연봉 상승률(raise)만큼 오른다고 봅니다
+     - 판 돈 − 매도 비용(0.5%) − 사내 대출 원금(거치라 그대로) − 보증보험구입대출 남은 원금 = 남는 돈
+     - 1주택 2년 보유·거주, 12억 이하면 양도세 비과세라 0으로 봅니다. 새 집은 생애최초가 아니라 취득세 감면 없음 */
+  function moveUp(v) {
+    // 지금 집 계산은 혼자 소득 기준(보수적). 그대로 살 때 3년 뒤 갈아타기만 결혼하면 부부 합산
+    const r = simulate({ ...v, refiExtra: v.married ? v.spSalary : 0 });
+    const Y = Math.max(v.compGrace, 1), k = Y * 12, g = Math.pow(1 + (v.raise || 0) / 100, Y);
+    const sale = v.price * Math.pow(1 + v.growth / 100, Y) * 10000;
+    const sellCost = sale * .005, smgLeft = r.fc.smg * Math.max(0, 1 - Y / 10);
+    const equity = sale - sellCost - r.C0 - smgLeft;
+    const spOwn = v.married ? v.spOwn * 10000 : 0;
+    const cashIn = equity + v.save3 * 10000 + spOwn;
+    const v2 = { ...v, price: v.price2, own: cashIn / 10000, salary: v.salary * g, extraIncome: v.married ? v.spSalary * g : 0, refiExtra: 0, firstHome: false };
+    const r2 = simulate(v2);
+    const span = Math.max(r2.G, 12);
+    const monthly = avg(r2.B.m, 0, span, o => o.cash), save = r2.repay / span, net = netHousehold(v2);
+    const safe = maxPriceSafe(v2), max = maxPrice(v2, P => Math.min(v2.compMax * 10000, P * 100 * v2.compLtv));
+    return { Y, sale, sellCost, smgLeft, payoff: r.C0 + smgLeft, equity, spOwn, cashIn, v2, r2, monthly, save, net,
+      share: (monthly + save) / net * 100, safe, max, shortfall: r2.fc.shortfall, stayRepay: r.repay, stayRefi: r.refiAmt, stayIncome: r.refiSal, k };
+  }
+
   /* 연간 원리금 / 연봉 (DSR, 은행 대출은 스트레스 금리 반영) */
   function dsr(v, r) {
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
@@ -232,7 +262,7 @@
     return {
       A: (r.compPay * 12 + smgYear(r.fc.smg)) / r.refiSal * 100, // 거치 후 원리금은 그때 연봉 기준
       B: (bankYear(r.refiAmt) + smgYear(r.fc.smg)) / r.refiSal * 100,
-      C: (bankYear(r.bankMax) + smgYear(r.fb.smg)) / v.salary * 100
+      C: (bankYear(r.bankMax) + smgYear(r.fb.smg)) / dsrIncome(v) * 100
     };
   }
 
@@ -285,7 +315,7 @@
   /* 통화량이 연 m2% 늘 때, 지금 돈이 같은 몫을 유지하려면 필요한 금액 */
   const moneyLine = (start, m2) => Array.from({ length: 11 }, (_, t) => start * Math.pow(1 + m2 / 100, t));
 
-  const api = { waitCost, dsrFactor, netMonthly, maxPriceSafe, netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
+  const api = { moveUp, dsrIncome, netHousehold, waitCost, dsrFactor, netMonthly, maxPriceSafe, netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
     funding, simulate, avg, maxPrice, maxPriceBank, dsr, recommend, breakEvenGrowth };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Homewise = api;
