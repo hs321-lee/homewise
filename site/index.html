@@ -70,6 +70,18 @@ h3{font-size:14px;margin:0;font-weight:600}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:18px;
   position:sticky;top:62px;max-height:calc(100vh - 74px);overflow:auto}
 @media (max-width:880px){.panel{position:static;max-height:none}}
+/* 좁은 화면: 입력 폼이 첫 화면을 다 차지해 탭을 눌러도 내용이 안 보이므로, 한 줄 요약으로 접고 눌렀을 때만 펼침 */
+.inputs-toggle{display:none}
+@media (max-width:880px){
+  .inputs-toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;font:inherit;font-size:13.5px;text-align:left;
+    padding:11px 14px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;cursor:pointer}
+  .inputs-toggle .cap{color:var(--muted);font-size:12px;font-weight:600;margin-right:8px}
+  .inputs-toggle .act{color:var(--own);font-weight:600;white-space:nowrap}
+  .inputs-toggle .act::after{content:" ▾"}
+  .inputs-toggle[aria-expanded=true] .act::after{content:" ▴"}
+  .layout:not(.inputs-open) .panel{display:none}
+}
+.layout.solo .inputs-toggle{display:none}
 .group{display:grid;gap:12px}
 .group>h3{font-size:12px;letter-spacing:.06em;color:var(--muted)}
 details.group>summary{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600;cursor:pointer}
@@ -216,7 +228,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <header class="top">
     <div class="brand">HOMEWISE</div>
     <h1>월세는 사라지고, <em>집은 남는다</em></h1>
-    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 왼쪽에 상황을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 예시입니다.</p>
+    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 상황을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 예시입니다.</p>
   </header>
 
   <nav class="menu" aria-label="Homewise 메뉴">
@@ -229,6 +241,9 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   </nav>
 
   <div class="layout" id="layout">
+    <button type="button" class="inputs-toggle" id="inputs-toggle" aria-expanded="false" aria-controls="inputs">
+      <span><span class="cap">내 상황</span><span id="inputs-sum"></span></span><span class="act" id="inputs-act">수정</span>
+    </button>
     <form class="panel" id="inputs" autocomplete="off">
       <div class="sample">예시 값입니다. 상담받는 분의 상황으로 바꿔 주세요.</div>
 
@@ -569,6 +584,7 @@ function showInputs(v) {
 function render() {
   const v = read();
   showInputs(v);
+  $("inputs-sum").textContent = `연봉 ${won(v.salary)} · 자기자금 ${eok(v.own)} · 집값 ${eok(v.price)}`;
   const r = H.simulate(v);
   const rec = H.recommend(v, r);
   const base = H.taxBase(v.salary, 0, 0);
@@ -913,7 +929,6 @@ const subs = [...document.querySelectorAll("#subtabs [role=tab]")];
 const SOLO = new Set(["insight-all", "insight-song", "insight-sonpum"]); // 입력값을 쓰지 않는 화면
 const TITLES = { compare: "비교", calc: "계산", pick: "무엇을 살까", "insight-all": "인사이트", "insight-bueilnam": "부읽남",
   "insight-song": "송희구", "insight-sonpum": "손품왕", "insight-facts": "팩트 체크" };
-const menu = document.querySelector(".menu");
 const indicator = document.createElement("span");
 indicator.className = "tabs-indicator";
 indicator.setAttribute("aria-hidden", "true");
@@ -940,7 +955,7 @@ function show(view, updateHash = true) {
   let top = view;
   if (view.startsWith("insight")) {
     top = "insight";
-    if (view !== "insight") sub = view;
+    sub = view === "insight" ? "insight-all" : view; // 인사이트 탭은 항상 한눈에부터
     if (!subs.some(b => b.dataset.view === sub)) sub = "insight-all";
   }
   if (!tabs.some(b => b.dataset.view === top)) top = "compare";
@@ -952,7 +967,9 @@ function show(view, updateHash = true) {
   const id = top === "insight" ? sub : top;
   document.title = `${TITLES[id]} · Homewise`;
   if (updateHash) history.replaceState(null, "", "#" + (id === "insight-all" ? "insight" : id));
-  if (window.scrollY > menu.offsetTop) window.scrollTo({ top: menu.offsetTop });
+  // 메뉴는 sticky라 붙어 있을 때 offsetTop이 바뀜 → 위 헤더 끝을 기준으로 탭 내용 시작점으로 올림
+  const menuTop = window.scrollY + document.querySelector("header.top").getBoundingClientRect().bottom;
+  if (window.scrollY > menuTop) window.scrollTo({ top: menuTop });
 }
 
 function keyNav(list, e) {
@@ -970,6 +987,12 @@ function keyNav(list, e) {
 window.addEventListener("hashchange", () => show(location.hash.slice(1), false));
 if ("ResizeObserver" in window) new ResizeObserver(() => moveIndicator(true)).observe($("tabs"));
 document.fonts?.ready.then(() => moveIndicator(true));
+
+$("inputs-toggle").addEventListener("click", () => {
+  const open = $("layout").classList.toggle("inputs-open");
+  $("inputs-toggle").setAttribute("aria-expanded", String(open));
+  $("inputs-act").textContent = open ? "접기" : "수정";
+});
 
 $("inputs").addEventListener("input", render);
 $("inputs").addEventListener("change", render);
