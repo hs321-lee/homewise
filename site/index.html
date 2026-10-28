@@ -7,39 +7,41 @@
 <meta name="description" content="월세는 사라지고, 집은 남는다. 사내 저리 대출·은행 주담대·월세를 비교하는 상담용 계산기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
 <style>
 /* Layout: 위 메뉴 탭(비교 · 계산 · 무엇을 살까 · 인사이트) + 왼쪽 상담 입력(데스크톱 sticky) + 오른쪽 탭 내용.
    입력값을 쓰지 않는 인사이트 화면(한눈에·송희구·손품왕)은 입력 패널을 숨기고 넓게 보여줍니다(.layout.solo). */
 :root{
+  /* 에르메스 오렌지(서울 3호선 주황과 같은 계열) + 아이보리 종이 + 에스프레소 잉크. 차트 4색은 validate_palette.js 통과 */
   color-scheme:light;
-  --bg:#f3f5f4; --surface:#ffffff; --sunk:#e9eeec;
-  --ink:#16302b; --muted:#5b6d68; --line:#d5dedb;
-  --own:#1d6b52;  --own-soft:#dcefe6;
-  --bank:#2f5f9e; --bank-soft:#e0e9f6;
-  --rent:#b04a3a; --rent-soft:#f6e3df;
-  --keep:#6b5aa6;
-  --warn:#9a6a00; --warn-soft:#fbefcf;
+  --bg:#f7f2ea; --surface:#fffcf7; --sunk:#f0e8dc;
+  --ink:#2b1f17; --muted:#7a685a; --line:#e6dacb;
+  --own:#d95f14;  --own-soft:#fbe6d6;
+  --bank:#2a5da8; --bank-soft:#e3ebf6;
+  --rent:#a33a6a; --rent-soft:#f6e4ec;
+  --keep:#00918c;
+  --warn:#a8701e; --warn-soft:#f8ecd6;
   --font-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --font-num:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-display:"Noto Serif KR","Nanum Myeongjo",serif;
+  --font-num:"Noto Serif KR","Nanum Myeongjo",serif;
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#101614; --surface:#18201e; --sunk:#1f2a27;
-  --ink:#e4ece9; --muted:#9aaba6; --line:#2e3b37;
-  --own:#5cc59b; --own-soft:#1d3a2f; --bank:#86aee8; --bank-soft:#1d2b40;
-  --rent:#e58a79; --rent-soft:#40231e;
-  --keep:#a898e0; --warn:#e2b44a; --warn-soft:#3a2f14; color-scheme:dark}}
+  --bg:#17120e; --surface:#211a15; --sunk:#2a221c;
+  --ink:#f2e8dc; --muted:#b4a493; --line:#3a2f27;
+  --own:#e06a22; --own-soft:#3d2414; --bank:#5b7fe8; --bank-soft:#1c2738;
+  --rent:#b04e86; --rent-soft:#3a1f2c;
+  --keep:#27a3a3; --warn:#e0ae5a; --warn-soft:#3a2c15; color-scheme:dark}}
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{display:grid;gap:6px;margin-bottom:22px}
-.brand{font-family:var(--font-num);font-size:13px;letter-spacing:.14em;font-weight:600;color:var(--own)}
-h1{font-size:clamp(24px,4vw,34px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700}
+.brand{font-family:var(--font-display);font-size:13px;letter-spacing:.32em;font-weight:600;color:var(--own)}
+h1{font-family:var(--font-display);font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.01em}
 h1 em{font-style:normal;color:var(--own)}
 .lede{margin:0;color:var(--muted);max-width:66ch}
-h2{font-size:17px;margin:0;font-weight:700;text-wrap:balance}
+h2{font-family:var(--font-display);font-size:18px;margin:0;font-weight:700;text-wrap:balance}
 h3{font-size:14px;margin:0;font-weight:600}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
@@ -105,7 +107,7 @@ section.block{display:grid;gap:12px;min-width:0}
 /* 추천 */
 .rec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--own);border-radius:10px;padding:18px 20px;display:grid;gap:10px}
 .rec .label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
-.rec .title{font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
+.rec .title{font-family:var(--font-display);font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
 .rec .reason{margin:0;font-size:14.5px}
 .paths{display:grid;gap:6px}
 .path{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;font-size:13.5px}
@@ -203,7 +205,7 @@ table.cmp td:first-child{font-weight:600}
 table.cmp a{color:var(--own);font-weight:600}
 .talk-head{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--keep);border-radius:10px;padding:16px 20px;display:grid;gap:6px}
 .talk-head .who{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:600}
-.talk-head .gist{font-size:clamp(17px,2.3vw,21px);font-weight:700;line-height:1.35;text-wrap:balance}
+.talk-head .gist{font-family:var(--font-display);font-size:clamp(17px,2.3vw,21px);font-weight:700;line-height:1.35;text-wrap:balance}
 .talk-head p{margin:0;font-size:13px;color:var(--muted)}
 .ins{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:ins}
 @media (max-width:760px){.ins{grid-template-columns:minmax(0,1fr)}}
@@ -701,7 +703,7 @@ function renderMoney(v, r, rec) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(10) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
   });
   $("nw").innerHTML = s;
   $("nw-note").innerHTML = `<div>매수 경로: <strong>${rec.best ? rec.best.name : "사내 → 은행 갈아타기"}</strong>. 두 사람은 매달 같은 돈을 쓰고, 덜 쓰는 쪽이 차액을 예금(${pct(v.depRate, 1)})에 넣는다고 계산했습니다.</div>
@@ -809,7 +811,7 @@ function drawChart(r) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(N) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="IBM Plex Mono, monospace">${won(e.last)}</text>`;
+    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
   });
   $("chart").innerHTML = s;
 }
