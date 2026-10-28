@@ -7,8 +7,12 @@
 <meta name="description" content="월세는 사라지고, 집은 남는다. 사내 저리 대출·은행 주담대·월세를 비교하는 상담용 계산기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&display=swap">
 <style>
+/* 글꼴: 본문·숫자는 나눔스퀘어 네오(네이버, OFL, site/fonts에 직접 둠), 큰 제목과 로고만 나눔명조 */
+@font-face{font-family:"NanumSquare Neo";font-weight:400;font-display:swap;src:url(fonts/NanumSquareNeoTTF-bRg.woff2) format("woff2")}
+@font-face{font-family:"NanumSquare Neo";font-weight:700;font-display:swap;src:url(fonts/NanumSquareNeoTTF-cBd.woff2) format("woff2")}
+@font-face{font-family:"NanumSquare Neo";font-weight:800;font-display:swap;src:url(fonts/NanumSquareNeoTTF-dEb.woff2) format("woff2")}
 /* Layout: 위 메뉴 탭(비교 · 계산 · 무엇을 살까 · 인사이트). 조건 입력 폼은 계산 탭에만 있고(.layout.with-inputs),
    다른 탭은 맨 위 "내 조건" 한 줄로 같은 값을 보여줍니다. 입력값은 이 브라우저에 저장됩니다. */
 :root{
@@ -21,9 +25,9 @@
   --rent:#a33a6a; --rent-soft:#f6e4ec;
   --keep:#00918c;
   --warn:#a8701e; --warn-soft:#f8ecd6;
-  --font-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --font-display:"Noto Serif KR","Nanum Myeongjo",serif;
-  --font-num:"Noto Serif KR","Nanum Myeongjo",serif;
+  --font-body:"NanumSquare Neo",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-display:"Nanum Myeongjo",serif;
+  --font-num:"NanumSquare Neo",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#17120e; --surface:#211a15; --sunk:#2a221c;
@@ -33,15 +37,15 @@
   --keep:#27a3a3; --warn:#e0ae5a; --warn-soft:#3a2c15; color-scheme:dark}}
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.65;font-variant-numeric:tabular-nums;word-break:keep-all;overflow-wrap:break-word}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header.top{display:grid;gap:6px;margin-bottom:22px}
-.brand{font-family:var(--font-display);font-size:13px;letter-spacing:.32em;font-weight:600;color:var(--own)}
-h1{font-family:var(--font-display);font-size:clamp(26px,4.2vw,38px);line-height:1.25;margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.01em}
+.brand{font-family:var(--font-display);font-size:13px;letter-spacing:.32em;font-weight:800;color:var(--own)}
+h1{font-family:var(--font-display);font-size:clamp(26px,4.2vw,38px);line-height:1.3;margin:0;text-wrap:balance;font-weight:800;letter-spacing:-.01em}
 h1 em{font-style:normal;color:var(--own)}
 .lede{margin:0;color:var(--muted);max-width:66ch}
-h2{font-family:var(--font-display);font-size:18px;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:18px;margin:0;font-weight:800;text-wrap:balance}
 h3{font-size:14px;margin:0;font-weight:600}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
@@ -103,7 +107,7 @@ section.block{display:grid;gap:12px;min-width:0}
 /* 추천 */
 .rec{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--own);border-radius:10px;padding:18px 20px;display:grid;gap:10px}
 .rec .label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
-.rec .title{font-family:var(--font-display);font-size:clamp(19px,2.6vw,24px);font-weight:700;line-height:1.3;text-wrap:balance}
+.rec .title{font-size:clamp(19px,2.6vw,24px);font-weight:800;line-height:1.3;text-wrap:balance}
 .rec .reason{margin:0;font-size:14.5px}
 .paths{display:grid;gap:6px}
 .path{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;font-size:13.5px}
@@ -208,7 +212,7 @@ table.cmp td:first-child{font-weight:600}
 table.cmp a{color:var(--own);font-weight:600}
 .talk-head{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--keep);border-radius:10px;padding:16px 20px;display:grid;gap:6px}
 .talk-head .who{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:600}
-.talk-head .gist{font-family:var(--font-display);font-size:clamp(17px,2.3vw,21px);font-weight:700;line-height:1.35;text-wrap:balance}
+.talk-head .gist{font-size:clamp(17px,2.3vw,21px);font-weight:800;line-height:1.35;text-wrap:balance}
 .talk-head p{margin:0;font-size:13px;color:var(--muted)}
 .ins{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:ins}
 @media (max-width:760px){.ins{grid-template-columns:minmax(0,1fr)}}
@@ -233,7 +237,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <header class="top">
     <div class="brand">HOMEWISE</div>
     <h1>월세는 사라지고, <em>집은 남는다</em></h1>
-    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 조건을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 신입사원(연봉 5,300만원 · 모은 돈 1억) 예시이고, 계산 탭에서 바꿀 수 있습니다.</p>
+    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 조건을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 신입사원(총소득 8,000만원 · 모은 돈 1억) 예시이고, 계산 탭에서 바꿀 수 있습니다.</p>
   </header>
 
   <nav class="menu" aria-label="Homewise 메뉴">
@@ -248,12 +252,12 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <div class="layout" id="layout">
     <form class="panel" id="inputs" autocomplete="off">
       <div class="panel-head"><h2>내 조건</h2><button type="button" class="reset" id="reset">기본값으로</button></div>
-      <div class="sample">예시 값입니다(신입 연봉 5,300만 · 모은 돈 1억). 연봉은 성과급을 뺀 고정급 기준입니다. 내 상황으로 바꾸면 이 브라우저에 저장되고 모든 탭에 반영됩니다.</div>
+      <div class="sample">예시 값입니다(연봉 8,000만 · 모은 돈 1억). 연봉은 성과급을 포함한 총소득 기준입니다. 내 상황으로 바꾸면 이 브라우저에 저장되고 모든 탭에 반영됩니다.</div>
 
       <div class="group">
         <h3>지금 상황</h3>
         <div class="field"><div class="row"><label for="salary">총연봉</label><output id="o-salary"></output></div>
-          <input type="range" id="salary" min="3000" max="20000" step="100" value="5300">
+          <input type="range" id="salary" min="3000" max="20000" step="100" value="8000">
           <div class="hint" id="h-base"></div></div>
         <div class="field"><div class="row"><label for="own">모은 돈 (자기자금)</label><output id="o-own"></output></div>
           <input type="range" id="own" min="0" max="10" step="0.1" value="1">
@@ -267,7 +271,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
       <div class="group">
         <h3>사려는 집</h3>
         <div class="field"><div class="row"><label for="price">집값 (시세)</label><output id="o-price"></output></div>
-          <input type="range" id="price" min="2" max="15" step="0.1" value="4">
+          <input type="range" id="price" min="2" max="15" step="0.1" value="5">
           <div class="hint" id="h-price"></div></div>
         <div class="field"><div class="row"><label for="pubRatio">공시가 / 시세 비율</label><output id="o-pubRatio"></output></div>
           <input type="range" id="pubRatio" min="55" max="90" step="1" value="69">
@@ -428,8 +432,9 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>통화량: <a href="https://biz.sbs.co.kr/amp/article/20000340139" target="_blank" rel="noopener">SBS Biz, 8월 시중 통화량 4267조원</a> (한국은행 2026-10-15 발표)</li>
             <li>금리: <a href="https://www.fnnews.com/news/202610270605559385" target="_blank" rel="noopener">파이낸셜뉴스 2026-10-27, 5대 은행 5년 고정 4.61~6.65%</a> · <a href="https://www.fntimes.com/html/view.php?ud=202610221201381124179ad43907_18" target="_blank" rel="noopener">한국금융신문, 기준금리 3.00% 동결</a></li>
             <li>LTV·스트레스 DSR: <a href="https://v.daum.net/v/20251017204647239" target="_blank" rel="noopener">생애최초 LTV 70% 유지</a> · <a href="https://biz.heraldcorp.com/article/10593711" target="_blank" rel="noopener">헤럴드경제, 수원 영통 LTV 40%</a> · <a href="https://www.banksalad.com/articles/%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4-DSR-%EA%B7%9C%EC%A0%9C-%EC%A0%84%EC%84%B8%EB%8C%80%EC%B6%9C-%EB%8B%A8%EA%B3%84" target="_blank" rel="noopener">스트레스 DSR 3단계 정리</a> · <a href="https://kbthink.com/main/real-estate/basic-information/first-time-real-estate/2025/first-time-real-estate-250327.html" target="_blank" rel="noopener">주기형 30%·혼합형 60%</a></li>
-            <li>신입 초봉: <a href="https://jasoseol.com/companies/141" target="_blank" rel="noopener">자소설닷컴</a> · <a href="https://community.linkareer.com/employment_data/5554745" target="_blank" rel="noopener">링커리어, 2026 대기업 초봉</a> (고정급 약 5,200만~5,500만)</li>
+            <li>신입 초봉: <a href="https://jasoseol.com/companies/141" target="_blank" rel="noopener">자소설닷컴</a> · <a href="https://community.linkareer.com/employment_data/5554745" target="_blank" rel="noopener">링커리어, 2026 대기업 초봉</a> (고정급 약 5,200만~5,500만, 성과급 포함 총소득은 더 높음)</li>
             <li>실거래: <a href="https://m.richgo.ai/realty/danji/a4ETpyK" target="_blank" rel="noopener">백현모아미래도1단지</a> · <a href="https://ndsts.com/apt_rent/aptlist_dong?region_code=41463&amp;dong=%EB%8F%99%EB%B0%B1%EB%8F%99" target="_blank" rel="noopener">동백동 실거래</a> · <a href="https://zippoom.com/%EB%B6%80%EB%8F%99%EC%82%B0/%EA%B2%BD%EA%B8%B0-%EC%88%98%EC%9B%90%EC%8B%9C-%EC%9E%A5%EC%95%88%EA%B5%AC-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%8B%A0%EC%9D%BC%EC%95%84%ED%8C%8C%ED%8A%B8/b2c6ar" target="_blank" rel="noopener">율전동 신일</a> · <a href="https://m.news.nate.com/view/20260716n27429" target="_blank" rel="noopener">망포늘푸른벽산</a> · <a href="https://m.news.nate.com/view/20260801n09088" target="_blank" rel="noopener">영통황골주공1차</a> · <a href="https://seonsu.ai/complex/38470-%EA%B6%8C%EC%84%A0%EB%8F%99-%EC%88%98%EC%9B%90%EC%95%84%EC%9D%B4%ED%8C%8C%ED%81%AC%EC%8B%9C%ED%8B%B07%EB%8B%A8%EC%A7%80" target="_blank" rel="noopener">수원아이파크시티7단지</a> · <a href="https://seonsu.ai/complex/38487-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%84%B1%EA%B7%A0%EA%B4%80%EB%8C%80%EC%97%AD%EB%8F%99%EB%AC%B8%EB%94%94%EC%9D%B4%EC%8A%A4%ED%8A%B8" target="_blank" rel="noopener">성균관대역동문디이스트</a> · <a href="https://apt2.me/apt/AptMonth.jsp?area=4146" target="_blank" rel="noopener">용인 최고가 대비</a></li>
+            <li>글꼴: 나눔스퀘어 네오·나눔명조 (네이버, SIL 오픈 폰트 라이선스)</li>
             <li>인사이트: 부읽남·송희구·손품왕 강연 녹취를 요약했습니다. 원문과 질의응답의 개인 사례는 싣지 않습니다.</li>
           </ul>
         </section>
@@ -576,7 +581,7 @@ const { won, eok, pct, avg, N } = H;
 const $ = id => document.getElementById(id);
 const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
   "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress"];
-const STORE = "homewise-inputs-v3"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
+const STORE = "homewise-inputs-v4"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
 const defaults = {};
 ids.forEach(id => { const el = $(id); defaults[id] = el.type === "checkbox" ? el.checked : el.value; });
 
@@ -734,7 +739,7 @@ function renderMoney(v, r, rec) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(10) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
+    s += `<text x="${x(10) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="NanumSquare Neo, sans-serif">${won(e.last)}</text>`;
   });
   $("nw").innerHTML = s;
   $("nw-note").innerHTML = `<div>매수 경로: <strong>${rec.best ? rec.best.name : "사내 → 은행 갈아타기"}</strong>. 두 사람은 매달 같은 돈을 쓰고, 덜 쓰는 쪽이 차액을 예금(${pct(v.depRate, 1)})에 넣는다고 계산했습니다.</div>
@@ -752,13 +757,13 @@ const PICKS = [
     note: "1호선 성균관대역 생활권. 같은 동네 신축(동문디이스트 59㎡ 6.3~7.1억)과 차이가 커서 덜 오른 쪽입니다. 세대수와 역까지 거리는 확인이 필요합니다." },
   { name: "망포늘푸른벽산", area: "수원 영통구 망포동", meta: "1,380세대 · 망포역 도보 10분 안팎", price: 4.5, range: "59㎡ 4.35~5.0억 (2026-06~07 실거래)",
     lag: "같은 동 신축 59㎡(영통아이파크캐슬 약 9.2억)의 절반", checks: { near: true, big: true, newish: false, station: true },
-    note: "영통·망포 생활권 안에서 가장 덜 오른 대단지 59㎡. 직주근접이 가장 좋은 후보입니다. 거래가 아래쪽(4.35억)이면 신입 보수적 예산(약 4억)에 가깝습니다." },
+    note: "영통·망포 생활권 안에서 가장 덜 오른 대단지 59㎡. 직주근접이 가장 좋은 후보입니다. 거래가 4.35~5.0억이라 보수적 예산 안에 들어올 수 있는 후보입니다." },
   { name: "영통황골주공1차", area: "수원 영통구 영통동", meta: "영통역 생활권", price: 5.2, range: "59㎡ 4.7~6.45억 (2026-05~07 실거래)",
     lag: "확인 필요", checks: { near: true, big: null, newish: false, station: null },
     note: "같은 59㎡인데 거래가 4.7억~6.45억으로 층·동에 따라 차이가 큽니다. 최대 대출이면 가능한 구간입니다." },
   { name: "수원아이파크시티 5·7단지", area: "수원 권선구 권선동", meta: "대단지 · 권선 대장", price: 6.2, range: "59㎡ 5.6~6.9억 (2026-08~10 실거래)",
     lag: "확인 필요", checks: { near: true, big: true, newish: true, station: null },
-    note: "권선구 대장 단지. 권선구는 비규제지역이라 실거주 의무가 없습니다. 신입 예산으로는 최대 대출 구간입니다." },
+    note: "권선구 대장 단지. 권선구는 비규제지역이라 실거주 의무가 없습니다. 보수적 예산은 넘고 최대 대출이면 가능한 구간입니다." },
   { name: "성균관대역동문디이스트", area: "수원 장안구 율전동", meta: "성균관대역", price: 6.8, range: "59.98㎡ 6.3~7.1억 (2026-06~10 실거래)",
     lag: "확인 필요", checks: { near: true, big: null, newish: true, station: true },
     note: "율전동 신축. 다음 목표(갈아타기) 후보로 흐름을 지켜볼 단지입니다." }
@@ -863,7 +868,7 @@ function drawChart(r) {
   if (over > 0) ends.forEach(e => { e.yy -= over; });
   ends.forEach(e => {
     s += `<text x="${x(N) + 9}" y="${e.yy - 1}" font-size="11" style="fill:${e.se.c}" font-weight="600">${e.se.n}</text>`;
-    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="Noto Serif KR, serif">${won(e.last)}</text>`;
+    s += `<text x="${x(N) + 9}" y="${e.yy + 12}" font-size="11.5" style="fill:var(--ink)" font-family="NanumSquare Neo, sans-serif">${won(e.last)}</text>`;
   });
   $("chart").innerHTML = s;
 }
