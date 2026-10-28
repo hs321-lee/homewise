@@ -212,6 +212,17 @@
     return lo;
   }
 
+  /* 지금 살까, 기다릴까(만원): years년 기다렸다가 사면 지금 사는 것보다 얼마나 더 드는지.
+     기다린 쪽 = 그동안 낸 월세(보증금 기회비용 포함) + 오른 집값 + 나중에 낼 취득비용
+     지금 산 쪽 = 같은 기간 사라진 돈(취득비용·이자·세금 등, sim.cumArr)
+     양수면 기다린 쪽이 손해. g는 연 집값 상승률(%) */
+  function waitCost(v, r, sim, years, g) {
+    const k = Math.round(years * 12);
+    const later = v.price * Math.pow(1 + g / 100, years);
+    const rent = r.rentCum[k], up = (later - v.price) * 10000, costs = buyCosts(later, v.firstHome).total;
+    return { rent, up, costs, buy: sim.cumArr[k], cost: rent + up + costs - sim.cumArr[k], later };
+  }
+
   /* 연간 원리금 / 연봉 (DSR, 은행 대출은 스트레스 금리 반영) */
   function dsr(v, r) {
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
@@ -272,7 +283,7 @@
   /* 통화량이 연 m2% 늘 때, 지금 돈이 같은 몫을 유지하려면 필요한 금액 */
   const moneyLine = (start, m2) => Array.from({ length: 11 }, (_, t) => start * Math.pow(1 + m2 / 100, t));
 
-  const api = { dsrFactor, netMonthly, maxPriceSafe, netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
+  const api = { waitCost, dsrFactor, netMonthly, maxPriceSafe, netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
     funding, simulate, avg, maxPrice, maxPriceBank, dsr, recommend, breakEvenGrowth };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Homewise = api;
