@@ -196,14 +196,15 @@
   /* 세후 월소득(만원): 연봉 − 4대보험 − 소득세(지방세 포함), 12로 나눔 */
   const netMonthly = sal => (sal - insurance(sal) - tax(sal, 0, 0)) / 12;
 
-  /* 보수적 최고가(억): 사내 대출 경로로 살 때 처음 몇 년(거치 기간, 없으면 1년) 통장에서 나가는 돈이
-     세후 월소득의 share% 이하이고 자금이 모자라지 않는 가장 비싼 집값 */
-  function maxPriceSafe(v, share = 35) {
+  /* 보수적 최고가(억): 사내 대출 경로로 살 때 처음 몇 년(거치 기간, 없으면 1년) 매달 통장에서 나가는 돈과
+     거치가 끝나 은행으로 갈아탈 때 직접 갚아야 할 돈을 그 기간에 나눠 모으는 돈의 합이 세후 월소득의 share% 이하이고,
+     자금이 모자라지 않는 가장 비싼 집값 */
+  function maxPriceSafe(v, share = 50) {
     const cap = netMonthly(v.salary) * share / 100;
     const ok = P => {
       const r = simulate({ ...v, price: P });
       const span = Math.max(r.G, 12);
-      return r.fc.shortfall === 0 && avg(r.B.m, 0, span, o => o.cash) <= cap;
+      return r.fc.shortfall === 0 && avg(r.B.m, 0, span, o => o.cash) + r.repay / span <= cap;
     };
     let lo = 1, hi = 25;
     if (!ok(lo)) return 0;

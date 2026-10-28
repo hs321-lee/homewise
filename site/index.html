@@ -177,14 +177,6 @@ tr.total td{font-weight:700;background:var(--sunk)}
 .chip.region{border-color:var(--bank);color:var(--bank)}
 .pick-budget{margin:0;font-size:14px}
 .pick-budget b{font-family:var(--font-num);color:var(--own)}
-.regions{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:7px}
-.region-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13.5px}
-.region{display:grid;grid-template-columns:96px minmax(0,1fr) 52px;align-items:center;gap:10px;font-size:13px}
-.region i{display:block;height:8px;border-radius:4px;background:var(--sunk);position:relative;overflow:hidden}
-.region i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);border-radius:4px;background:var(--muted)}
-.region.hl i::after{background:var(--own)}
-.region b{font-family:var(--font-num);text-align:right;font-weight:600}
-.regions p{margin:2px 0 0}
 .bar{grid-column:1/-1;position:relative;height:6px;background:var(--sunk);border-radius:3px}
 .bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--own)}
 .bar b{position:absolute;top:-4px;width:2px;height:14px;background:var(--ink)}
@@ -241,7 +233,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <header class="top">
     <div class="brand">HOMEWISE</div>
     <h1>월세는 사라지고, <em>집은 남는다</em></h1>
-    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 조건을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 연봉 8,000만원 · 모은 돈 1억 예시이고, 계산 탭에서 바꿀 수 있습니다.</p>
+    <p class="lede">사내 저리 대출, 은행 주담대, 월세를 같은 기준으로 비교합니다. 내 조건을 넣으면 가장 나은 경로를 바로 다시 계산합니다. 처음 값은 신입사원(연봉 5,300만원 · 모은 돈 1억) 예시이고, 계산 탭에서 바꿀 수 있습니다.</p>
   </header>
 
   <nav class="menu" aria-label="Homewise 메뉴">
@@ -256,12 +248,12 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
   <div class="layout" id="layout">
     <form class="panel" id="inputs" autocomplete="off">
       <div class="panel-head"><h2>내 조건</h2><button type="button" class="reset" id="reset">기본값으로</button></div>
-      <div class="sample">예시 값입니다(연봉 8,000만 · 모은 돈 1억). 내 상황으로 바꾸면 이 브라우저에 저장되고 모든 탭에 반영됩니다.</div>
+      <div class="sample">예시 값입니다(신입 연봉 5,300만 · 모은 돈 1억). 연봉은 성과급을 뺀 고정급 기준입니다. 내 상황으로 바꾸면 이 브라우저에 저장되고 모든 탭에 반영됩니다.</div>
 
       <div class="group">
         <h3>지금 상황</h3>
         <div class="field"><div class="row"><label for="salary">총연봉</label><output id="o-salary"></output></div>
-          <input type="range" id="salary" min="3000" max="20000" step="100" value="8000">
+          <input type="range" id="salary" min="3000" max="20000" step="100" value="5300">
           <div class="hint" id="h-base"></div></div>
         <div class="field"><div class="row"><label for="own">모은 돈 (자기자금)</label><output id="o-own"></output></div>
           <input type="range" id="own" min="0" max="10" step="0.1" value="1">
@@ -275,7 +267,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
       <div class="group">
         <h3>사려는 집</h3>
         <div class="field"><div class="row"><label for="price">집값 (시세)</label><output id="o-price"></output></div>
-          <input type="range" id="price" min="3" max="15" step="0.1" value="6">
+          <input type="range" id="price" min="2" max="15" step="0.1" value="4">
           <div class="hint" id="h-price"></div></div>
         <div class="field"><div class="row"><label for="pubRatio">공시가 / 시세 비율</label><output id="o-pubRatio"></output></div>
           <input type="range" id="pubRatio" min="55" max="90" step="1" value="69">
@@ -436,8 +428,8 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <li>통화량: <a href="https://biz.sbs.co.kr/amp/article/20000340139" target="_blank" rel="noopener">SBS Biz, 8월 시중 통화량 4267조원</a> (한국은행 2026-10-15 발표)</li>
             <li>금리: <a href="https://www.fnnews.com/news/202610270605559385" target="_blank" rel="noopener">파이낸셜뉴스 2026-10-27, 5대 은행 5년 고정 4.61~6.65%</a> · <a href="https://www.fntimes.com/html/view.php?ud=202610221201381124179ad43907_18" target="_blank" rel="noopener">한국금융신문, 기준금리 3.00% 동결</a></li>
             <li>LTV·스트레스 DSR: <a href="https://v.daum.net/v/20251017204647239" target="_blank" rel="noopener">생애최초 LTV 70% 유지</a> · <a href="https://biz.heraldcorp.com/article/10593711" target="_blank" rel="noopener">헤럴드경제, 수원 영통 LTV 40%</a> · <a href="https://www.banksalad.com/articles/%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%8A%A4-DSR-%EA%B7%9C%EC%A0%9C-%EC%A0%84%EC%84%B8%EB%8C%80%EC%B6%9C-%EB%8B%A8%EA%B3%84" target="_blank" rel="noopener">스트레스 DSR 3단계 정리</a> · <a href="https://kbthink.com/main/real-estate/basic-information/first-time-real-estate/2025/first-time-real-estate-250327.html" target="_blank" rel="noopener">주기형 30%·혼합형 60%</a></li>
-            <li>전고점 회복: <a href="https://www.viva100.com/article/20261012501064" target="_blank" rel="noopener">브릿지경제, 직방 3분기 집계</a> · <a href="https://www.etoday.co.kr/news/view/2634506" target="_blank" rel="noopener">이투데이</a></li>
-            <li>실거래: <a href="https://m.news.nate.com/view/20260724n22681" target="_blank" rel="noopener">호반써밋송도</a> · <a href="https://m.news.nate.com/view/20260714n22474" target="_blank" rel="noopener">e편한세상송도</a> · <a href="https://m.richgo.ai/realty/danji/a1xrYXn" target="_blank" rel="noopener">래미안부평</a> · <a href="https://keyzard.cc/views/nb/NDo2Kz4tMG5vb2tlZW1ta2xmZmltZm9vag" target="_blank" rel="noopener">부평역해링턴플레이스</a> · <a href="https://www.aptrank.com/apt_recent.php?addcode=28237&amp;pgroup=30" target="_blank" rel="noopener">부평구 30평대 순위</a> · <a href="https://www.news1.kr/realestate/general/5971217" target="_blank" rel="noopener">운정</a></li>
+            <li>신입 초봉: <a href="https://jasoseol.com/companies/141" target="_blank" rel="noopener">자소설닷컴</a> · <a href="https://community.linkareer.com/employment_data/5554745" target="_blank" rel="noopener">링커리어, 2026 대기업 초봉</a> (고정급 약 5,200만~5,500만)</li>
+            <li>실거래: <a href="https://m.richgo.ai/realty/danji/a4ETpyK" target="_blank" rel="noopener">백현모아미래도1단지</a> · <a href="https://ndsts.com/apt_rent/aptlist_dong?region_code=41463&amp;dong=%EB%8F%99%EB%B0%B1%EB%8F%99" target="_blank" rel="noopener">동백동 실거래</a> · <a href="https://zippoom.com/%EB%B6%80%EB%8F%99%EC%82%B0/%EA%B2%BD%EA%B8%B0-%EC%88%98%EC%9B%90%EC%8B%9C-%EC%9E%A5%EC%95%88%EA%B5%AC-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%8B%A0%EC%9D%BC%EC%95%84%ED%8C%8C%ED%8A%B8/b2c6ar" target="_blank" rel="noopener">율전동 신일</a> · <a href="https://m.news.nate.com/view/20260716n27429" target="_blank" rel="noopener">망포늘푸른벽산</a> · <a href="https://m.news.nate.com/view/20260801n09088" target="_blank" rel="noopener">영통황골주공1차</a> · <a href="https://seonsu.ai/complex/38470-%EA%B6%8C%EC%84%A0%EB%8F%99-%EC%88%98%EC%9B%90%EC%95%84%EC%9D%B4%ED%8C%8C%ED%81%AC%EC%8B%9C%ED%8B%B07%EB%8B%A8%EC%A7%80" target="_blank" rel="noopener">수원아이파크시티7단지</a> · <a href="https://seonsu.ai/complex/38487-%EC%9C%A8%EC%A0%84%EB%8F%99-%EC%84%B1%EA%B7%A0%EA%B4%80%EB%8C%80%EC%97%AD%EB%8F%99%EB%AC%B8%EB%94%94%EC%9D%B4%EC%8A%A4%ED%8A%B8" target="_blank" rel="noopener">성균관대역동문디이스트</a> · <a href="https://apt2.me/apt/AptMonth.jsp?area=4146" target="_blank" rel="noopener">용인 최고가 대비</a></li>
             <li>인사이트: 부읽남·송희구·손품왕 강연 녹취를 요약했습니다. 원문과 질의응답의 개인 사례는 싣지 않습니다.</li>
           </ul>
         </section>
@@ -445,22 +437,13 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
 
       <div class="tabpanel" id="p-pick" role="tabpanel" aria-labelledby="tab-pick" hidden>
         <section class="block" aria-labelledby="t-pick">
-          <div class="block-head"><h2 id="t-pick">무엇을 살까: 아직 덜 오른 곳, 내 예산 안에서</h2><span class="muted small">84㎡ 기준 · 2026-10 확인</span></div>
+          <div class="block-head"><h2 id="t-pick">무엇을 살까: 신입 첫 집, 59㎡ · 수원~용인</h2><span class="muted small">59㎡(방 3개) 기준 · 2026-10 확인</span></div>
           <p class="pick-budget" id="pick-budget"></p>
-          <div class="regions">
-            <div class="region-head"><b>2021년 전고점 이상에서 거래된 비중</b><span class="muted small">2026년 3분기, 직방 집계</span></div>
-            <div class="region"><span>성남 분당</span><i style="--w:94.1%"></i><b>94.1%</b></div>
-            <div class="region"><span>서울</span><i style="--w:54.7%"></i><b>54.7%</b></div>
-            <div class="region"><span>경기 전체</span><i style="--w:22.4%"></i><b>22.4%</b></div>
-            <div class="region hl"><span>인천 부평구</span><i style="--w:9.9%"></i><b>9.9%</b></div>
-            <div class="region hl"><span>인천 연수구</span><i style="--w:6.8%"></i><b>6.8%</b></div>
-            <div class="region hl"><span>파주</span><i style="--w:4%"></i><b>4.0%</b></div>
-            <p class="muted small">낮을수록 아직 2021년 고점을 회복하지 못한 거래가 많다는 뜻입니다. 수원 영통·용인 수지는 이미 많이 올랐고 규제지역(일반 LTV 40%, 토지거래허가 실거주 의무)이라 이번 목록에서 뺐습니다.</p>
-          </div>
-          <div class="callout"><strong>고르는 기준</strong><br>
-            ① 덜 오른 지역 안에서도 역세권·대단지·신축 대장만 봅니다. 한 단계 아래 동네의 대장이 갈아타기 쉽습니다. <span class="muted">(부읽남)</span><br>
-            ② 다만 덜 오른 곳은 회복력이 약할 수도 있습니다. 2023년 초 저점보다는 다시 올랐는지, 하락장에도 거래됐는지 꼭 확인합니다. <span class="muted">(송희구)</span><br>
-            ③ 2026년에는 상승이 가격 순위 4·3분위로 번진다는 전망입니다. 그 지역 안에서 중간 아래로는 내려가지 않습니다. <span class="muted">(손품왕)</span><br>
+          <div class="callout"><strong>고르는 순서 (신입사원용)</strong><br>
+            ① <b>직주근접이 1원칙.</b> 수원 직장 기준으로 용인보다 멀리 가지 않습니다. 신입은 출퇴근 시간이 곧 체력이고 저축입니다.<br>
+            ② <b>59㎡(방 3개).</b> 방 3개면 결혼 뒤에도 계속 살 수 있습니다. <span class="muted">(송희구 질의응답)</span><br>
+            ③ <b>그 안에서 덜 오른 대단지.</b> 같은 생활권 신축보다 많이 싸고, 단지 최고가를 아직 회복하지 못한 곳을 봅니다. 한 단계 아래 동네라도 대단지를 고릅니다. <span class="muted">(부읽남·손품왕)</span><br>
+            ④ 덜 오른 곳은 회복력이 약할 수도 있으니, 2023년 초 저점보다 다시 올랐는지와 하락장 거래 건수를 꼭 확인합니다. <span class="muted">(송희구)</span><br>
             <a class="more" href="#insight">세 강연 비교해서 보기 →</a></div>
           <div class="ladder" id="picks"></div>
         </section>
@@ -593,7 +576,7 @@ const { won, eok, pct, avg, N } = H;
 const $ = id => document.getElementById(id);
 const ids = ["price","pubRatio","salary","own","smgRate","bankType","bankRate","bankCap","bankLtv","dedOn","rentDeposit","rentMonthly",
   "depRate","oppOn","growth","firstHome","m2Rate","compRate","compLegal","compMax","compLtv","compGrace","compYears","stress"];
-const STORE = "homewise-inputs-v2";
+const STORE = "homewise-inputs-v3"; // 기본값이 바뀌면 버전을 올려 예전 저장값을 쓰지 않음
 const defaults = {};
 ids.forEach(id => { const el = $(id); defaults[id] = el.type === "checkbox" ? el.checked : el.value; });
 
@@ -633,8 +616,8 @@ function render() {
   showInputs(v);
   save(v);
   $("cond-sum").textContent = `연봉 ${won(v.salary)} · 모은 돈 ${eok(v.own)} · 집값 ${eok(v.price)} · 금리 ${pct(v.bankRate)}`;
-  const safe = H.maxPriceSafe(v, 35);
-  $("h-price").textContent = `보수적 최고가 약 ${eok(safe)} (처음 몇 년 나가는 돈 ≤ 세후 월소득 35%)`;
+  const safe = H.maxPriceSafe(v);
+  $("h-price").textContent = `보수적 최고가 약 ${eok(safe)} (매달 나가는 돈 + 갈아탈 때 갚을 돈 모으기 ≤ 세후 월소득 50%)`;
   const r = H.simulate(v);
   const rec = H.recommend(v, r);
   const base = H.taxBase(v.salary, 0, 0);
@@ -758,34 +741,34 @@ function renderMoney(v, r, rec) {
     <div class="muted small">집값이 통화량만큼 오른다는 것은 강의의 주장이자 가정입니다. 실제 집값은 지역·단지마다 다르고 떨어질 수도 있습니다.</div>`;
 }
 
-// 아직 덜 오른 곳: 직방 3분기 집계에서 전고점 이상 거래 비중이 가장 낮은 인천·파주 중 역세권·대단지·신축 위주.
-// 모두 비규제지역(LTV 70%, 토지거래허가 실거주 의무 없음). 가격은 뉴스·시세 사이트의 실거래 보도 기준
+// 신입사원 첫 집: 59㎡(방 3개) · 직주근접이 1원칙(수원 직장 기준 용인보다 멀지 않은 곳) · 그 안에서 덜 오른 곳.
+// 가격은 국토부 실거래를 인용한 뉴스·시세 사이트 기준(2026-10 확인). 최고가 대비는 단지별 과거 최고가 기준
 const PICKS = [
-  { name: "호반써밋송도", area: "인천 연수구 송도동", meta: "2023년 · 1,820세대", price: 6.5, range: "84㎡ 6.0~7.1억 (2026-06~07 실거래)",
-    region: "연수구 전고점 이상 거래 6.8%", checks: { big: true, newish: true, lead: null, station: null },
-    note: "송도 안에서도 공급이 많던 쪽이라 회복이 더딥니다. GTX-B(인천대입구역)는 2030년 예정이라 강연 기준으로는 호재보다 입지로 판단합니다." },
-  { name: "e편한세상송도", area: "인천 연수구 송도동", meta: "2018년 · 2,708세대", price: 6.6, range: "84㎡ 6.4~6.9억 (2026-04~07 실거래)",
-    region: "연수구 전고점 이상 거래 6.8%", checks: { big: true, newish: true, lead: null, station: null },
-    note: "대단지라 하락장에도 거래가 이어지는 편인지(환금성)를 2022~2023년 거래 건수로 확인해 보세요." },
-  { name: "래미안부평", area: "인천 부평구 부평동", meta: "", price: 6.6, range: "84㎡ 6.6억 (2026-05 실거래)",
-    region: "부평구 전고점 이상 거래 9.9%", checks: { big: null, newish: false, lead: false, station: null },
-    note: "84㎡ 거래가 적어 시세 대표성이 낮습니다. 송희구 기준으로는 거래가 적은 이유(안 팔리는지)를 먼저 봐야 합니다." },
-  { name: "부평역해링턴플레이스", area: "인천 부평구", meta: "1,909세대", price: 7.35, range: "84㎡ 7.35억 (2026 하반기 실거래)",
-    region: "부평구 전고점 이상 거래 9.9%", checks: { big: true, newish: true, lead: true, station: null },
-    note: "부평 대장권. 역까지 걸어서 몇 분인지는 확인이 필요합니다. 보수적 예산은 넘지만 최대 대출이면 가능한 구간입니다." },
-  { name: "부평SK뷰해모로", area: "인천 부평구 부평동", meta: "2023년 · 1,559세대 · 1호선", price: 7.6, range: "84㎡ 7.6억 (2025-12 실거래)",
-    region: "부평구 전고점 이상 거래 9.9%", checks: { big: true, newish: true, lead: true, station: true },
-    note: "부평 신축 대장. 최근 거래가 2025년 말이라 지금 호가는 더 높을 수 있습니다." },
-  { name: "운정신도시아이파크", area: "파주 동패동 · 운정", meta: "GTX-A 운정중앙역", price: null, range: "84㎡ 7.2~8.0억 (보도, 거래 시점 확인 필요)",
-    region: "파주 전고점 이상 거래 4%", checks: { big: null, newish: true, lead: null, station: true },
-    note: "가장 덜 회복된 지역. GTX-A로 서울역·삼성역 접근이 좋아졌지만, 송희구는 일산처럼 너무 북쪽인 곳은 시세를 잘 따라가지 못한다고 봤습니다." }
+  { name: "백현모아미래도1단지", area: "용인 기흥구 동백동", meta: "2006년 · 838세대", price: 3.25, range: "59㎡ 3.0~3.5억 (2026-07~08 실거래)",
+    lag: "동백동 59㎡ 최고가 대비 81~92%", checks: { near: true, big: true, newish: false, station: null },
+    note: "용인 안(기흥구)이라 직주근접 기준 안쪽입니다. 동백 학군(동백중)이 있고 가격이 가장 덜 회복된 편입니다. 기흥구는 2026-06-30부터 규제지역이라 2년 실거주 의무가 있지만, 첫 집으로 들어가 살 거라면 문제가 되지 않습니다." },
+  { name: "율전동 신일", area: "수원 장안구 율전동", meta: "성균관대역 생활권", price: 4.3, range: "59.9㎡ 4.3억 (2026-09 실거래)",
+    lag: "율전동 59㎡ 최고가 대비 73~88%", checks: { near: true, big: null, newish: false, station: null },
+    note: "1호선 성균관대역 생활권. 같은 동네 신축(동문디이스트 59㎡ 6.3~7.1억)과 차이가 커서 덜 오른 쪽입니다. 세대수와 역까지 거리는 확인이 필요합니다." },
+  { name: "망포늘푸른벽산", area: "수원 영통구 망포동", meta: "1,380세대 · 망포역 도보 10분 안팎", price: 4.5, range: "59㎡ 4.35~5.0억 (2026-06~07 실거래)",
+    lag: "같은 동 신축 59㎡(영통아이파크캐슬 약 9.2억)의 절반", checks: { near: true, big: true, newish: false, station: true },
+    note: "영통·망포 생활권 안에서 가장 덜 오른 대단지 59㎡. 직주근접이 가장 좋은 후보입니다. 거래가 아래쪽(4.35억)이면 신입 보수적 예산(약 4억)에 가깝습니다." },
+  { name: "영통황골주공1차", area: "수원 영통구 영통동", meta: "영통역 생활권", price: 5.2, range: "59㎡ 4.7~6.45억 (2026-05~07 실거래)",
+    lag: "확인 필요", checks: { near: true, big: null, newish: false, station: null },
+    note: "같은 59㎡인데 거래가 4.7억~6.45억으로 층·동에 따라 차이가 큽니다. 최대 대출이면 가능한 구간입니다." },
+  { name: "수원아이파크시티 5·7단지", area: "수원 권선구 권선동", meta: "대단지 · 권선 대장", price: 6.2, range: "59㎡ 5.6~6.9억 (2026-08~10 실거래)",
+    lag: "확인 필요", checks: { near: true, big: true, newish: true, station: null },
+    note: "권선구 대장 단지. 권선구는 비규제지역이라 실거주 의무가 없습니다. 신입 예산으로는 최대 대출 구간입니다." },
+  { name: "성균관대역동문디이스트", area: "수원 장안구 율전동", meta: "성균관대역", price: 6.8, range: "59.98㎡ 6.3~7.1억 (2026-06~10 실거래)",
+    lag: "확인 필요", checks: { near: true, big: null, newish: true, station: true },
+    note: "율전동 신축. 다음 목표(갈아타기) 후보로 흐름을 지켜볼 단지입니다." }
 ];
-const CHECK_NAMES = { station: "역세권", big: "대단지", newish: "신축·준신축", lead: "지역 대장" };
+const CHECK_NAMES = { near: "직주근접", station: "역세권", big: "대단지", newish: "신축·준신축" };
 
 function renderPicks(v, r) {
   const maxC = H.maxPrice(v, P => Math.min(v.compMax * 10000, P * 100 * v.compLtv));
   const maxAll = Math.max(maxC, H.maxPriceBank(v));
-  const safe = H.maxPriceSafe(v, 35);
+  const safe = H.maxPriceSafe(v);
   $("pick-budget").innerHTML = `보수적 예산 <b>${eok(safe)}</b> · 최대 대출 <b>${eok(maxAll)}</b>`;
   const rows = PICKS.slice().sort((a, b) => (a.price ?? 99) - (b.price ?? 99)).map(p => {
     let pill = `<span class="pill ask">가격 확인</span>`;
@@ -797,7 +780,7 @@ function renderPicks(v, r) {
     }).join("");
     return `<div class="rung"><div class="what">${p.name}</div><div class="v">${p.price != null ? eok(p.price) : "–"}</div>
       <div class="why">${p.area}${p.meta ? " · " + p.meta : ""} · ${p.range}</div>
-      <div class="chips">${chips}<span class="chip q">? 2023년 저점 대비 반등</span><span class="chip region">${p.region}</span></div>
+      <div class="chips">${chips}<span class="chip region">${p.lag}</span></div>
       <div class="why">${p.note}</div>
       <div class="pick-meta">${pill}${p.price != null ? `<button type="button" data-price="${p.price}">이 집값으로 계산</button>` : ""}</div></div>`;
   }).join("");
@@ -954,7 +937,7 @@ function renderLadder(v, r) {
     { w: "이자 소득공제를 받을 수 있는 시세 상한", v: pDed, why: `공시가 6억 ÷ 공시가 비율 ${v.pubRatio}% (추정). 조건은 취득 당시 공시가 6억 이하입니다.` },
     { w: "사내 대출로 살 수 있는 최고가", v: pCashC, why: `자기자금 ${eok(v.own)} + 사내 대출 + 보증보험구입대출 최대 3억 − 취득세·중개비` },
     { w: "은행 주담대로 살 수 있는 최고가", v: pCashB, why: `자기자금 ${eok(v.own)} + 은행 min(${eok(v.bankCap)}, 집값×${v.bankLtv}%) + 보증보험구입대출 − 취득세·중개비. 연봉 기준 DSR 40%(스트레스 금리 반영) 안에서 계산` },
-    { w: "보수적 최고가 (권장)", v: H.maxPriceSafe(v, 35), why: `사내 대출로 살 때 처음 ${Math.max(v.compGrace, 1)}년 통장에서 나가는 돈이 세후 월소득(약 ${won(H.netMonthly(v.salary))}원)의 35% 이하. 송희구 강연 기준 30%면 약 ${eok(H.maxPriceSafe(v, 30))}` }
+    { w: "보수적 최고가 (권장)", v: H.maxPriceSafe(v), why: `사내 대출로 살 때 처음 ${Math.max(v.compGrace, 1)}년 매달 나가는 돈 + 거치가 끝나 갈아탈 때 직접 갚을 돈을 그동안 나눠 모으는 돈이 세후 월소득(약 ${won(H.netMonthly(v.salary))}원)의 50% 이하` }
   ];
   const mark = Math.min(v.price, scale) / scale * 100;
   $("ladder").innerHTML = rungs.map(g => `
