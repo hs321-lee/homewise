@@ -97,3 +97,28 @@ test("은행 대출은 DSR 40%를 넘지 않는다", () => {
   assert.ok(d.B <= 40.01, String(d.B));
   assert.ok(r.bankMax <= r.bankLimit);
 });
+
+test("스트레스 금리: 주기형은 30%만 반영해 DSR 한도를 줄인다", () => {
+  const v = { ...base, bankRate: 5, stress: 3 };
+  near(H.dsrFactor(v), H.annuity(1, 5.9, 360) * 12, 1e-12, "주기형 5% + 3% × 30%");
+  near(H.dsrFactor({ ...v, bankType: "mixed" }), H.annuity(1, 6.8, 360) * 12, 1e-12, "혼합형 60%");
+  assert.ok(H.maxPriceBank(v) < H.maxPriceBank({ ...v, stress: 0 }));
+  assert.ok(H.simulate(v).bankMax < H.simulate({ ...v, stress: 0 }).bankMax);
+});
+
+test("스트레스 금리는 실제 상환액에는 쓰지 않는다", () => {
+  const v = { ...base, salary: 15000, bankRate: 5 };
+  const a = H.simulate({ ...v, stress: 0 }), b = H.simulate({ ...v, stress: 3 });
+  assert.equal(a.bankMax, b.bankMax); // 고소득이면 한도(6억)에 먼저 걸려 같은 금액
+  near(a.C.m[0].bInt, b.C.m[0].bInt, 1e-9, "같은 대출이면 같은 이자");
+});
+
+test("보수적 최고가: 처음 몇 년 나가는 돈이 세후 월소득 35% 이하", () => {
+  const v = { ...base, own: 1, bankRate: 5, stress: 3, depRate: 3 };
+  const P = H.maxPriceSafe(v, 35);
+  const r = H.simulate({ ...v, price: P });
+  const cash = H.avg(r.B.m, 0, Math.max(r.G, 12), o => o.cash);
+  assert.ok(cash <= H.netMonthly(v.salary) * 0.35 + 0.01, String(cash));
+  assert.ok(P < H.maxPrice(v, Q => Math.min(v.compMax * 10000, Q * 100 * v.compLtv)), "최대치보다 낮다");
+  assert.ok(H.maxPriceSafe(v, 30) < P, "30%면 더 낮다");
+});

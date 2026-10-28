@@ -80,6 +80,14 @@
    *  B: 사내대출 → 거치 끝나면 은행 주담대로 갈아타기
    *  C: 처음부터 은행 주담대
    */
+  /* DSR 계산용 은행 원리금 계수(1만원당 연 원리금). 수도권 주담대는 금리에 스트레스 금리를 더해 한도를 계산합니다.
+     반영 비율: 5년 주기형 30%, 혼합형 60% (3단계 스트레스 DSR). 실제 상환액 계산에는 쓰지 않습니다 */
+  const STRESS_SHARE = { jugi: .3, jugiEq: .3, mixed: .6 };
+  function dsrFactor(v) {
+    const r = v.bankRate + (v.stress || 0) * STRESS_SHARE[v.bankType];
+    return v.bankType === "jugiEq" ? 1 / 30 + r / 100 : annuity(1, r, 360) * 12;
+  }
+
   function simulate(v) {
     const P = v.price, pub = P * v.pubRatio / 100, dedOK = pub <= 6;
     const limit = LIMIT[v.bankType], eqPrin = v.bankType === "jugiEq";
@@ -88,7 +96,7 @@
     const C0 = Math.min(v.compMax * 10000, P * 10000 * v.compLtv / 100);
     /* DSR: (은행 원리금 + 보증보험구입대출 원리금) / 연봉 ≤ 40% */
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
-    const bankFactor = v.bankType === "jugiEq" ? 1 / 30 + v.bankRate / 100 : annuity(1, v.bankRate, 360) * 12;
+    const bankFactor = dsrFactor(v);
     const dsrCap = smg => Math.max(0, (v.salary * DSR_MAX / 100 - smgYear(smg)) / bankFactor);
     const support = Math.max(0, v.compLegal - v.compRate); // 소득으로 잡히는 회사 지원 금리
     const G = Math.round(v.compGrace * 12), compN = Math.round(v.compYears * 12);
@@ -173,7 +181,7 @@
 
   /* 은행 경로 최고가: LTV·한도·DSR 40%를 모두 지키면서 살 수 있는 가격, 억 */
   function maxPriceBank(v) {
-    const bf = v.bankType === "jugiEq" ? 1 / 30 + v.bankRate / 100 : annuity(1, v.bankRate, 360) * 12;
+    const bf = dsrFactor(v);
     const sf = 1 / 10 + v.smgRate / 100 * .95, cap = v.salary * DSR_MAX / 100;
     let lo = 1, hi = 25;
     for (let k = 0; k < 40; k++) {
@@ -185,10 +193,28 @@
     return lo;
   }
 
-  /* 연간 원리금 / 연봉 (스트레스 금리 제외 단순 DSR) */
+  /* 세후 월소득(만원): 연봉 − 4대보험 − 소득세(지방세 포함), 12로 나눔 */
+  const netMonthly = sal => (sal - insurance(sal) - tax(sal, 0, 0)) / 12;
+
+  /* 보수적 최고가(억): 사내 대출 경로로 살 때 처음 몇 년(거치 기간, 없으면 1년) 통장에서 나가는 돈이
+     세후 월소득의 share% 이하이고 자금이 모자라지 않는 가장 비싼 집값 */
+  function maxPriceSafe(v, share = 35) {
+    const cap = netMonthly(v.salary) * share / 100;
+    const ok = P => {
+      const r = simulate({ ...v, price: P });
+      const span = Math.max(r.G, 12);
+      return r.fc.shortfall === 0 && avg(r.B.m, 0, span, o => o.cash) <= cap;
+    };
+    let lo = 1, hi = 25;
+    if (!ok(lo)) return 0;
+    for (let k = 0; k < 30; k++) { const P = (lo + hi) / 2; if (ok(P)) lo = P; else hi = P; }
+    return lo;
+  }
+
+  /* 연간 원리금 / 연봉 (DSR, 은행 대출은 스트레스 금리 반영) */
   function dsr(v, r) {
     const smgYear = S => S > 0 ? S / 10 + S * v.smgRate / 100 * .95 : 0;
-    const bankYear = amt => v.bankType === "jugiEq" ? amt / 30 + amt * v.bankRate / 100 : annuity(amt, v.bankRate, 360) * 12;
+    const bankYear = amt => amt * dsrFactor(v);
     return {
       A: (r.compPay * 12 + smgYear(r.fc.smg)) / v.salary * 100,
       B: (bankYear(r.refiAmt) + smgYear(r.fc.smg)) / v.salary * 100,
@@ -245,7 +271,7 @@
   /* 통화량이 연 m2% 늘 때, 지금 돈이 같은 몫을 유지하려면 필요한 금액 */
   const moneyLine = (start, m2) => Array.from({ length: 11 }, (_, t) => start * Math.pow(1 + m2 / 100, t));
 
-  const api = { netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
+  const api = { dsrFactor, netMonthly, maxPriceSafe, netWorth, moneyLine, N, LIMIT, won, eok, pct, earnDed, insurance, incomeTax, taxBase, tax, refund, buyCosts, annuity, firstYear,
     funding, simulate, avg, maxPrice, maxPriceBank, dsr, recommend, breakEvenGrowth };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Homewise = api;
