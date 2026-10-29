@@ -164,6 +164,12 @@ tr.total td{font-weight:700;background:var(--sunk)}
 .move .go .big{color:var(--own)}
 .move dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;font-size:13px}
 .move dt{color:var(--muted)}
+.perk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.perk>div{border:1px solid var(--line);border-top:3px solid var(--own);border-radius:10px;padding:12px 14px;background:var(--surface);display:grid;gap:4px;min-width:0}
+.perk .cap{font-size:12.5px;color:var(--muted);font-weight:700}
+.perk b{font-family:var(--font-num);font-size:20px;font-weight:800;color:var(--own)}
+.perk span{font-size:12.5px;color:var(--muted)}
+@media (max-width:720px){.perk{grid-template-columns:1fr}}
 .move dd{margin:0;text-align:right;font-family:var(--font-num);font-weight:700}
 @media (max-width:640px){.move{grid-template-columns:minmax(0,1fr)}}
 .callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px}
@@ -429,6 +435,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted)}
             <div class="stay"><div class="cap">그대로 살며 은행으로 갈아타기</div><div class="big" id="m-stay"></div><div id="m-stay-d"></div></div>
             <div class="go"><div class="cap" id="m-go-h"></div><div class="big" id="m-go"></div><div id="m-go-d"></div></div>
           </div>
+          <div class="perk" id="perk"></div>
           <div class="ten" id="move-note"></div>
         </section>
 
@@ -1049,6 +1056,14 @@ function renderMove(v, r) {
     [`${who} 세후 월소득 대비 (갈아탈 때 갚을 돈 모으기 포함)`, `${m.share.toFixed(0)}%`],
     ["보수적 최고가 / 최대", `${eok(m.safe)} / ${eok(m.max)}`]
   ]) + `<div><span class="pill ${ok ? "ok" : m.shortfall > 0 ? "no" : "ask"}">${ok ? "보수적 예산 안" : m.shortfall > 0 ? "자금 부족" : "보수적 예산 초과"}</span></div>`;
+  const p = m.perk;
+  $("perk").innerHTML = m.shortfall > 0 ? "" : [
+    [`거치 ${m.Y}년 한 번 더`, `월 ${won(p.less)}원 덜 냄`, `새 사내 대출 ${won(p.loan)}원을 처음부터 원리금으로 갚을 때보다 매달 이만큼 적게 나갑니다. ${m.Y}년이면 ${won(p.less * m.Y * 12)}원`],
+    ["은행 금리 대비 아끼는 이자", `${won(p.cheap)}원`, `${m.Y}년 동안 ${pct(v.compRate, 1)} (은행 ${pct(v.bankRate)} 대신)`],
+    ["원금 갚기 시작", `${m.Y}년 뒤 → ${p.at}년 뒤`, m.stayRepay > 0 || p.repay > 0
+      ? `직접 갚을 돈: 그대로 살면 ${m.Y}년 뒤 ${won(m.stayRepay)}원, 갈아타면 ${p.at}년 뒤 ${won(p.repay)}원. 연봉이 더 오른 뒤에 갚습니다`
+      : `두 경우 모두 은행으로 전부 넘길 수 있어 직접 갚을 큰돈은 없고, 원금 상환만 ${m.Y}년 늦춰집니다`]
+  ].map(([c, b, d]) => `<div><span class="cap">${c}</span><b>${b}</b><span>${d}</span></div>`).join("");
   $("move-note").innerHTML = `<div>갈아타면 사내 대출 거치를 한 번 더 써서 은행으로 넘어가며 큰돈을 갚는 시점을 미룰 수 있습니다. 송희구 강연 기준으로 갈아탈 땐 최소 1.5배(지금 집이면 ${eok(v.price * 1.5)})로 가야 거래 비용(약 1억)을 넘는 의미가 있습니다.</div>
     <div class="muted small">가정: 사내 대출을 다시 받을 수 있어야 합니다(회사 규정 확인). 1주택 2년 보유·거주, 12억 이하면 양도세 비과세라 0으로 봤고, 매도 비용 0.5%, 보증보험구입대출은 남은 원금을 갚고 새로 받는다고 봤습니다. 새 집은 생애최초가 아니라 취득세 감면이 없습니다.</div>`;
   $("h-price2").textContent = `지금 집의 1.5배 = ${eok(v.price * 1.5)} (송희구 최소 기준) · ${m.Y}년 뒤 보수적 최고가 약 ${eok(m.safe)}`;
