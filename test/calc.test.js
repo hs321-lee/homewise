@@ -171,3 +171,11 @@ test("3년 뒤 집 갈아타기: 판 돈에서 대출을 갚고 모은 돈을 �
   assert.equal(H.maxPriceSafe(v), H.maxPriceSafe({ ...v, married: false }), "지금 집 예산은 결혼과 무관");
   assert.ok(H.moveUp({ ...v, growth: 3 }).equity > m.equity, "집값이 오르면 남는 돈이 늘어난다");
 });
+
+test("갈아타면 사내 대출 거치를 한 번 더 써서 원금 상환을 미룬다", () => {
+  const v = { ...base, compGrace: 3, married: false, spSalary: 0, spOwn: 0, save3: 0.5, price2: 7.5, raise: 3 };
+  const m = H.moveUp(v);
+  assert.ok(m.perk.less > 0, "원리금보다 이자만 내는 게 적어야 한다");
+  assert.equal(m.perk.at, 6);
+  assert.ok(m.perk.cheap > 0);
+});

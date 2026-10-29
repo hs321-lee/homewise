@@ -251,8 +251,12 @@
     const span = Math.max(r2.G, 12);
     const monthly = avg(r2.B.m, 0, span, o => o.cash), save = r2.repay / span, net = netHousehold(v2);
     const safe = maxPriceSafe(v2), max = maxPrice(v2, P => Math.min(v2.compMax * 10000, P * 100 * v2.compLtv));
+    // 거치를 한 번 더 쓰는 효과: 원금 상환을 미루고, 그동안 은행보다 싼 금리
+    const graceInt = r2.C0 * v.compRate / 100 / 12;
+    const perk = { less: Math.max(0, r2.compPay - graceInt), cheap: r2.C0 * Math.max(0, v.bankRate - v.compRate) / 100 * Y,
+      loan: r2.C0, repay: r2.repay, at: Y * 2 };
     return { Y, sale, sellCost, smgLeft, payoff: r.C0 + smgLeft, equity, spOwn, cashIn, v2, r2, monthly, save, net,
-      share: (monthly + save) / net * 100, safe, max, shortfall: r2.fc.shortfall, stayRepay: r.repay, stayRefi: r.refiAmt, stayIncome: r.refiSal, k };
+      share: (monthly + save) / net * 100, safe, max, shortfall: r2.fc.shortfall, stayRepay: r.repay, stayRefi: r.refiAmt, stayIncome: r.refiSal, k, perk };
   }
 
   /* 연간 원리금 / 연봉 (DSR, 은행 대출은 스트레스 금리 반영) */
